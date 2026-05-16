@@ -12,7 +12,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex items-center gap-4">
           {/* Client switcher placeholder — built in Task 4.1 */}
           <Bell className="text-paper" size={20} aria-label="Notifications" />
-          <User className="text-paper" size={20} aria-label="Profile" />
+          <form action="/auth/signout" method="post">
+            <button type="submit" aria-label="Sign out" className="text-paper hover:text-sand2">
+              <User size={20} />
+            </button>
+          </form>
         </div>
       </header>
       <div className="flex-1 p-8 lg:p-12">{children}</div>
