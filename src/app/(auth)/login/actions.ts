@@ -23,7 +23,14 @@ export async function sendMagicLink(
   });
 
   if (error) {
-    // Generic message — don't leak whether the email exists or not.
+    // Log server-side for diagnostics; show a generic message to the user
+    // so we don't leak whether the email exists.
+    console.error('[login] signInWithOtp error:', {
+      email,
+      status: error.status,
+      code: error.code,
+      message: error.message,
+    });
     return { error: 'No access — ask Janelle for an invite.' };
   }
   return { sent: true };

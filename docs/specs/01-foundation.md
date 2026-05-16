@@ -1,6 +1,6 @@
 ---
 title: Slice 01 — Foundation
-status: implemented (pending DB push)
+status: implemented
 slice: 01
 depends_on: []
 last_updated: 2026-05-16
@@ -10,6 +10,7 @@ amendments:
   - 2026-05-16 (cross-slice review): added profiles.email mirrored column; added client_for_item() helper; clarified audit_log.target_type values to 'item' | 'comment' | 'share'; documented default-deny RLS pattern for audit_log INSERT
   - 2026-05-16 (Next.js 16 reality-check): renamed middleware.ts → proxy.ts (Next.js 16 convention — functionality unchanged)
   - 2026-05-16 (T2 review): dropped sync_profile_email trigger (Supabase doesn't allow public-schema triggers on auth.users); item_photos.uploaded_by → nullable + on delete set null
+  - 2026-05-16 (smoke-check fixes): migration 0007 broke org_roles RLS recursion via is_super_admin() helper; seed migration 0006 now includes auth.identities row + empty-string defaults on auth.users *_token columns
 ---
 
 # Slice 01 — Foundation (auth, tenancy, data model)
