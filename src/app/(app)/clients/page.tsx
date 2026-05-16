@@ -41,7 +41,11 @@ export default async function ClientsPage() {
         )}
       </div>
       {clients && clients.length === 0 ? (
-        <p className="text-ink3">You have no access. Ask Janelle for an invite.</p>
+        isSuperAdmin ? (
+          <p className="text-ink3">No clients yet. Click <strong>+ New client</strong> to add your first one.</p>
+        ) : (
+          <p className="text-ink3">You have no access. Ask Janelle for an invite.</p>
+        )
       ) : (
         <ul className="space-y-3">
           {clients?.map((c) => (
