@@ -42,7 +42,13 @@ create policy items_select on public.items for select
   using (public.can_access_client(public.client_for_item(id)));
 create policy items_write on public.items for all
   using (public.can_access_client(public.client_for_item(id)))
-  with check (public.can_access_client(public.client_for_item(id)));
+  with check (
+    exists (
+      select 1 from public.locations l
+      where l.id = location_id
+        and public.can_access_client(l.client_id)
+    )
+  );
 
 -- item_photos: gated via item → location.client_id.
 create policy item_photos_select on public.item_photos for select
