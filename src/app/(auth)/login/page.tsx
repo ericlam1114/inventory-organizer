@@ -5,7 +5,10 @@ import { useActionState } from 'react';
 import { sendMagicLink } from './actions';
 
 export default function LoginPage() {
-  const [state, action, pending] = useActionState(sendMagicLink, {});
+  const [state, action, pending] = useActionState<
+    { error?: string; sent?: boolean },
+    FormData
+  >(sendMagicLink, {});
 
   return (
     <div className="space-y-8">
