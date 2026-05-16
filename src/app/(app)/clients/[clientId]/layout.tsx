@@ -23,7 +23,7 @@ export default async function ClientLayout({
 
   return (
     <>
-      <div className="pb-20">{children}</div>
+      <div className="pb-24">{children}</div>
       <ClientBottomNav />
     </>
   );

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { verifySession } from '@/lib/shares/cookie';
+import { Brand } from '@/components/Brand';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ShareViewerBanner } from '../../ShareViewerBanner';
 
@@ -87,14 +88,7 @@ export default async function ShareItemPage({
   return (
     <main className="min-h-screen bg-paper flex flex-col">
       <header className="bg-ink h-14 lg:h-16 flex items-center px-6 lg:px-8">
-        <Image
-          src="/logo-light.svg"
-          alt="Straighten Up"
-          width={96}
-          height={28}
-          style={{ height: 'auto', width: 'auto' }}
-          priority
-        />
+        <Brand variant="light" size={28} />
       </header>
       <ShareViewerBanner
         senderName={sender?.display_name ?? 'Janelle Lam'}

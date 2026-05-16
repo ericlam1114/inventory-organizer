@@ -1,8 +1,8 @@
 import { notFound, redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import Image from 'next/image';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { verifySession } from '@/lib/shares/cookie';
+import { Brand } from '@/components/Brand';
 import { ShareViewerBanner } from './ShareViewerBanner';
 import { ShareItemsGrid } from './ShareItemsGrid';
 
@@ -130,14 +130,7 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
   return (
     <main className="min-h-screen bg-paper flex flex-col">
       <header className="bg-ink h-14 lg:h-16 flex items-center px-6 lg:px-8">
-        <Image
-          src="/logo-light.svg"
-          alt="Straighten Up"
-          width={96}
-          height={28}
-          style={{ height: 'auto', width: 'auto' }}
-          priority
-        />
+        <Brand variant="light" size={28} />
       </header>
       <ShareViewerBanner
         senderName={sender?.display_name ?? 'Janelle Lam'}
@@ -166,14 +159,7 @@ function SharePagePlaceholder({ title }: { title: string }) {
   return (
     <main className="min-h-screen bg-paper flex flex-col">
       <header className="bg-ink h-14 lg:h-16 flex items-center px-6 lg:px-8">
-        <Image
-          src="/logo-light.svg"
-          alt="Straighten Up"
-          width={96}
-          height={28}
-          style={{ height: 'auto', width: 'auto' }}
-          priority
-        />
+        <Brand variant="light" size={28} />
       </header>
       <div className="flex-1 flex items-center justify-center p-12">
         <p className="text-ink2 text-[15px] text-center max-w-md">{title}</p>

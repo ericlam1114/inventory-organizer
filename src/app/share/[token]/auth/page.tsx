@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, use } from 'react';
-import Image from 'next/image';
+import { Brand } from '@/components/Brand';
 import { authShare } from './actions';
 
 export default function ShareAuthPage({ params }: { params: Promise<{ token: string }> }) {
@@ -12,7 +12,7 @@ export default function ShareAuthPage({ params }: { params: Promise<{ token: str
   return (
     <main className="min-h-screen bg-paper flex flex-col">
       <header className="bg-ink h-14 lg:h-16 flex items-center px-6 lg:px-8">
-        <Image src="/logo-light.svg" alt="Straighten Up" width={96} height={28} style={{ height: 'auto', width: 'auto' }} priority />
+        <Brand variant="light" size={28} />
       </header>
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-[420px] bg-surface border border-rule rounded-[4px] p-8 lg:p-12 space-y-6">

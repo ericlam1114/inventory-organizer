@@ -18,7 +18,7 @@ export default function LoginPage() {
           alt="Straighten Up"
           width={180}
           height={53}
-          style={{ height: 'auto', width: 'auto', margin: '0 auto' }}
+          style={{ width: '180px', height: '53px', margin: '0 auto' }}
           priority
         />
         <p className="text-ink3 text-[12px] tracking-wide">

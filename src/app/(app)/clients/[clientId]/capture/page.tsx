@@ -92,12 +92,11 @@ export default function CapturePage({ params }: { params: Promise<{ clientId: st
     setSaving(true);
     try {
       const supabase = createClient();
-      // Create the item
+      // Create the item via SECURITY DEFINER RPC (bypasses RLS WITH CHECK,
+      // authorization enforced inside the function via can_access_location)
       const { data: item, error: itemErr } = await supabase
-        .from('items')
-        .insert({ location_id: locationId, title: title.trim() })
-        .select('id')
-        .single();
+        .rpc('create_item', { p_location_id: locationId, p_title: title.trim() })
+        .single<{ id: string }>();
       if (itemErr || !item) throw itemErr ?? new Error('Insert failed');
 
       // Upload photos sequentially so cover-photo logic in upload.ts sees the right first-photo case
