@@ -16,7 +16,12 @@ create table public.client_memberships (
 );
 create index memberships_client_idx on public.client_memberships(client_id);
 
--- can_access_client: the ONE access rule, called by every RLS policy
+-- can_access_client: the ONE access rule, called by every RLS policy.
+-- IMPORTANT: any row in org_roles (super_admin OR org_team_all) grants access
+-- to EVERY client. This is intentional — org_team_all is a "spans-all-clients"
+-- role (e.g. movers, organizing assistants) who Janelle wants seeing everything.
+-- If you later add an org-level role that should be scoped, do NOT add it to
+-- org_roles — add it to client_memberships with a per-client row instead.
 create or replace function public.can_access_client(target_client_id uuid)
 returns boolean
 language sql
