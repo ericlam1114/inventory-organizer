@@ -15,7 +15,7 @@ Start here: [`00-master.md`](./00-master.md) — full project vision, users, dat
 
 | #   | Slice                                                     | Status     | Spec |
 | --- | --------------------------------------------------------- | ---------- | ---- |
-| 01  | Foundation — auth, tenancy, core data model               | **approved** | [`specs/01-foundation.md`](./specs/01-foundation.md) |
+| 01  | Foundation — auth, tenancy, core data model               | **code complete · DB push pending** | [`specs/01-foundation.md`](./specs/01-foundation.md) |
 | 02  | Photo + item capture — upload, metadata, grid + sheet     | **approved** | [`specs/02-photo-item-capture.md`](./specs/02-photo-item-capture.md) |
 | 03  | Move / audit log — one-click move, who-did-what trail     | **approved** | [`specs/03-move-audit-log.md`](./specs/03-move-audit-log.md) |
 | 04  | Comments + notifications                                  | **approved** | [`specs/04-comments-notifications.md`](./specs/04-comments-notifications.md) |

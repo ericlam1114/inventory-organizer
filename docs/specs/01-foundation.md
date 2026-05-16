@@ -1,6 +1,6 @@
 ---
 title: Slice 01 — Foundation
-status: approved
+status: implemented (pending DB push)
 slice: 01
 depends_on: []
 last_updated: 2026-05-16
