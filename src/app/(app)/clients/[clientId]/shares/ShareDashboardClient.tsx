@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Link as LinkIcon } from 'lucide-react';
+import { Plus, Link as LinkIcon, Share2 } from 'lucide-react';
 import { createShare, revokeShare } from './actions';
+import { toast } from '@/lib/toast';
 
 type Location = { id: string; name: string; parentLocationId: string | null };
 type ActiveShare = {
@@ -31,12 +32,14 @@ export function ShareDashboardClient({
   function copyLink(token: string) {
     const url = `${window.location.origin}/share/${token}`;
     navigator.clipboard.writeText(url);
+    toast.success('Link copied');
   }
 
   function handleRevoke(shareId: string) {
     if (!confirm('Revoke this share link?')) return;
     startTransition(async () => {
       await revokeShare(clientId, shareId);
+      toast.success('Share revoked');
       router.refresh();
     });
   }
@@ -46,7 +49,7 @@ export function ShareDashboardClient({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-ink3 text-[13px] uppercase tracking-wide">Settings · {clientName}</p>
-          <h1 className="text-[32px] font-medium leading-[40px] mt-1">Shares</h1>
+          <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2] mt-1">Shares</h1>
         </div>
         <button
           type="button"
@@ -57,13 +60,35 @@ export function ShareDashboardClient({
         </button>
       </div>
 
-      {showForm && <CreateShareForm clientId={clientId} locations={locations} onCancel={() => setShowForm(false)} />}
+      {showForm && (
+        <CreateShareForm
+          clientId={clientId}
+          locations={locations}
+          onCancel={() => setShowForm(false)}
+          onCreated={() => { setShowForm(false); router.refresh(); }}
+        />
+      )}
 
       {/* Active section */}
       <section className="space-y-3">
         <h2 className="text-[18px] font-medium">Active</h2>
         {active.length === 0 ? (
-          <p className="text-ink3 text-[13px]">No active shares.</p>
+          <div className="bg-surface border border-rule rounded-[4px] py-12 px-6 text-center">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-sand2 text-ink2 mb-4">
+              <Share2 size={20} />
+            </div>
+            <h3 className="text-[16px] font-medium mb-1">No active shares</h3>
+            <p className="text-ink3 text-[14px] mb-5 max-w-xs mx-auto">
+              Share a location subtree with insurance agents or anyone who needs to view the inventory.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowForm(true)}
+              className="inline-flex items-center gap-2 bg-ink text-paper px-4 py-2.5 rounded-[2px] hover:bg-ink2 text-[13px] font-medium"
+            >
+              <Plus size={14} /> New share
+            </button>
+          </div>
         ) : (
           <ul className="space-y-3">
             {active.map((s) => (
@@ -139,10 +164,11 @@ function ShareRow({ share: s, kind, pending, onCopy, onRevoke }: {
   );
 }
 
-function CreateShareForm({ clientId, locations, onCancel }: {
+function CreateShareForm({ clientId, locations, onCancel, onCreated }: {
   clientId: string;
   locations: Location[];
   onCancel: () => void;
+  onCreated: () => void;
 }) {
   const bound = createShare.bind(null, clientId);
   const [pending, startTransition] = useTransition();
@@ -152,7 +178,12 @@ function CreateShareForm({ clientId, locations, onCancel }: {
     <form
       action={(fd) => startTransition(async () => {
         const result = await bound({}, fd);
-        if (result?.error) setError(result.error);
+        if (result?.error) {
+          setError(result.error);
+        } else {
+          toast.success('Share created and sent');
+          onCreated();
+        }
       })}
       className="bg-surface border border-rule rounded-[4px] p-6 space-y-5"
     >

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Move, ChevronDown } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { StatusBadge } from '@/components/StatusBadge';
+import { toast } from '@/lib/toast';
 
 type Location = { id: string; name: string; parent_location_id: string | null };
 type Status = 'active' | 'donated' | 'archived';
@@ -33,8 +34,9 @@ export function ItemActions({
       p_new_location_id: newLocationId,
       p_note: note || null,
     });
-    if (error) { setError(error.message); setPending(false); return; }
+    if (error) { setError(error.message); toast.error(error.message); setPending(false); return; }
     setOpenMove(false); setPending(false);
+    toast.success('Item moved');
     router.refresh();
   }
 
@@ -47,8 +49,9 @@ export function ItemActions({
       p_new_status: newStatus,
       p_note: note || null,
     });
-    if (error) { setError(error.message); setPending(false); return; }
+    if (error) { setError(error.message); toast.error(error.message); setPending(false); return; }
     setOpenStatus(false); setPending(false);
+    toast.success('Status updated');
     router.refresh();
   }
 

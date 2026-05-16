@@ -1,7 +1,8 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { updateItemMetadata } from './actions';
+import { toast } from '@/lib/toast';
 
 type Field = {
   id: string;
@@ -26,6 +27,11 @@ export function ItemMetadataForm({
     { error?: string; saved?: boolean },
     FormData
   >(bound, {});
+
+  useEffect(() => {
+    if (state.saved) toast.success('Saved');
+    if (state.error) toast.error(state.error);
+  }, [state.saved, state.error]);
 
   return (
     <form action={action} className="bg-surface border border-rule rounded-[4px] p-6 space-y-5">
@@ -88,7 +94,6 @@ export function ItemMetadataForm({
       })}
 
       {state.error && <p className="text-danger text-[13px]">{state.error}</p>}
-      {state.saved && <p className="text-success text-[13px]">Saved.</p>}
 
       <button type="submit" disabled={pending}
         className="bg-ink text-paper px-4 py-2.5 rounded-[2px] hover:bg-ink2 disabled:opacity-60 text-[13px] font-medium">

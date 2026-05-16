@@ -4,6 +4,7 @@ import { useState, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { toast } from '@/lib/toast';
 import {
   useReactTable,
   getCoreRowModel,
@@ -70,6 +71,7 @@ export function ItemSheet({ clientId, items, fields }: { clientId: string; items
     const { error } = await supabase.from('items').update(payload).eq('id', itemId);
     if (error) {
       setMeta(key, { saving: false, error: error.message });
+      toast.error(error.message);
       return;
     }
     setMeta(key, { saving: false, error: null });

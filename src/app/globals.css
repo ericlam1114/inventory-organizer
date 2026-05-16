@@ -18,6 +18,19 @@
 
   --radius-sm: 2px;
   --radius-md: 4px;
+
+  --animate-toast-in: toast-in 150ms ease-out;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 body {
@@ -30,4 +43,8 @@ body {
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+.animate-in {
+  animation: var(--animate-toast-in);
 }

@@ -4,6 +4,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { MentionAutocomplete, type MentionUser } from './MentionAutocomplete';
+import { Avatar } from '@/components/Avatar';
+import { toast } from '@/lib/toast';
 
 type Comment = {
   id: string;
@@ -40,10 +42,6 @@ function renderBody(body: string) {
   return parts;
 }
 
-function initials(name: string) {
-  return name.split(/\s+/).filter(Boolean).map((p) => p[0]).join('').slice(0, 2).toUpperCase() || '?';
-}
-
 export function CommentsPanel({
   itemId, comments: initialComments, mentionable,
 }: { itemId: string; comments: Comment[]; mentionable: MentionUser[] }) {
@@ -58,13 +56,11 @@ export function CommentsPanel({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setCurrentUserId(user.id);
-      // Detect privileged roles for delete-anyone
       const { data: orgRole } = await supabase.from('org_roles').select('role').eq('user_id', user.id);
-      setIsPrivileged((orgRole ?? []).length > 0); // super_admin OR org_team_all
+      setIsPrivileged((orgRole ?? []).length > 0);
     })();
   }, [supabase]);
 
-  // Update local comments when props change (after router.refresh)
   useEffect(() => setComments(initialComments), [initialComments]);
 
   return (
@@ -113,16 +109,20 @@ function CommentItem({
   async function handleSaveEdit(newBody: string) {
     setPending(true); setError(null);
     const { error } = await supabase.rpc('edit_comment', { p_comment_id: c.id, p_new_body: newBody });
-    if (error) { setError(error.message); setPending(false); return; }
-    setEditing(false); setPending(false); onMutated();
+    if (error) { setError(error.message); toast.error(error.message); setPending(false); return; }
+    setEditing(false); setPending(false);
+    toast.success('Comment updated');
+    onMutated();
   }
 
   async function handleDelete() {
     if (!confirm("Delete this comment? It'll show as 'deleted' in the thread.")) return;
     setPending(true); setError(null);
     const { error } = await supabase.rpc('delete_comment', { p_comment_id: c.id });
-    if (error) { setError(error.message); setPending(false); return; }
-    setPending(false); onMutated();
+    if (error) { setError(error.message); toast.error(error.message); setPending(false); return; }
+    setPending(false);
+    toast.success('Comment deleted');
+    onMutated();
   }
 
   if (c.deletedAt) {
@@ -141,7 +141,7 @@ function CommentItem({
   if (editing) {
     return (
       <li className="flex gap-3">
-        <div className="w-8 h-8 rounded-full bg-sand2 text-ink2 flex items-center justify-center text-[11px] font-medium shrink-0">{initials(c.authorDisplayName)}</div>
+        <Avatar name={c.authorDisplayName} size={32} />
         <div className="flex-1 min-w-0">
           <EditForm initialBody={c.body} mentionable={mentionable} pending={pending} error={error}
             onCancel={() => setEditing(false)} onSubmit={handleSaveEdit} />
@@ -152,7 +152,7 @@ function CommentItem({
 
   return (
     <li className="flex gap-3">
-      <div className="w-8 h-8 rounded-full bg-sand2 text-ink2 flex items-center justify-center text-[11px] font-medium shrink-0">{initials(c.authorDisplayName)}</div>
+      <Avatar name={c.authorDisplayName} size={32} />
       <div className="flex-1 min-w-0">
         <p className="text-[13px]">
           <span className="font-medium text-ink">{c.authorDisplayName}{c.authorRemoved ? ' (removed)' : ''}</span>
@@ -215,10 +215,12 @@ function ComposeBox({ itemId, mentionable, onPosted }: {
     if (!body.trim()) return;
     setPending(true); setError(null);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setError('Not signed in'); setPending(false); return; }
+    if (!user) { setError('Not signed in'); toast.error('Not signed in'); setPending(false); return; }
     const { error } = await supabase.from('comments').insert({ item_id: itemId, author_id: user.id, body: body.trim() });
-    if (error) { setError(error.message); setPending(false); return; }
-    setBody(''); setPending(false); onPosted();
+    if (error) { setError(error.message); toast.error(error.message); setPending(false); return; }
+    setBody(''); setPending(false);
+    toast.success('Comment posted');
+    onPosted();
   }
 
   return (
