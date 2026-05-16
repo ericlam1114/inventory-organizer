@@ -7,6 +7,8 @@ import { Plus, Star } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { processPhoto } from '@/lib/photos/process';
 import { uploadItemPhoto } from '@/lib/photos/upload';
+import { toast } from '@/lib/toast';
+import { PhotoLightbox } from '@/components/PhotoLightbox';
 
 type PhotoInput = { id: string; storagePath: string; signedUrl: string | null };
 
@@ -21,9 +23,13 @@ export function ItemPhotos({
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const cover = photos.find((p) => p.id === coverPhotoId) ?? photos[0];
   const others = photos.filter((p) => p.id !== cover?.id);
+
+  // For lightbox: all photos in display order (cover first, then others)
+  const orderedPhotos = cover ? [cover, ...others] : others;
 
   async function handleAdd(filelist: FileList | null) {
     if (!filelist || filelist.length === 0) return;
@@ -34,9 +40,12 @@ export function ItemPhotos({
         const { blob, filename } = await processPhoto(file);
         await uploadItemPhoto({ clientId, itemId, blob, filename });
       }
+      toast.success('Photo added');
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'upload failed');
+      const msg = e instanceof Error ? e.message : 'upload failed';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
@@ -46,17 +55,26 @@ export function ItemPhotos({
     setBusy(true);
     const supabase = createClient();
     const { error } = await supabase.from('items').update({ cover_photo_id: photoId }).eq('id', itemId);
-    if (error) setError(error.message);
-    else router.refresh();
+    if (error) {
+      setError(error.message);
+      toast.error(error.message);
+    } else {
+      toast.success('Cover updated');
+      router.refresh();
+    }
     setBusy(false);
   }
 
   return (
     <div className="space-y-4">
       {cover?.signedUrl ? (
-        <div className="relative w-full aspect-square bg-paper">
+        <button
+          type="button"
+          onClick={() => setLightboxIndex(0)}
+          className="relative w-full aspect-square bg-paper block cursor-zoom-in"
+        >
           <Image src={cover.signedUrl} alt="" fill className="object-contain" sizes="(max-width: 768px) 100vw, 720px" priority />
-        </div>
+        </button>
       ) : (
         <div className="w-full aspect-square bg-paper flex items-center justify-center text-ink3 text-[13px]">
           {photos.length === 0 ? 'No photos yet' : 'Loading…'}
@@ -65,20 +83,27 @@ export function ItemPhotos({
 
       {others.length > 0 && (
         <div className="flex gap-2 overflow-x-auto">
-          {others.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => promoteToCover(p.id)}
-              disabled={busy}
-              className="relative shrink-0 w-20 h-20 group disabled:opacity-50"
-              title="Promote to cover"
-            >
-              {p.signedUrl && <Image src={p.signedUrl} alt="" fill className="object-cover" sizes="80px" />}
-              <span className="absolute inset-0 flex items-center justify-center bg-ink/0 group-hover:bg-ink/40 transition-colors">
+          {others.map((p, idx) => (
+            <div key={p.id} className="relative shrink-0 w-20 h-20 group">
+              {/* Click to open lightbox at this photo (idx+1 because cover is 0) */}
+              <button
+                type="button"
+                onClick={() => setLightboxIndex(idx + 1)}
+                className="absolute inset-0 cursor-zoom-in"
+                aria-label="View photo"
+              />
+              {p.signedUrl && <Image src={p.signedUrl} alt="" fill className="object-cover pointer-events-none" sizes="80px" />}
+              {/* Star button for promote-to-cover */}
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); promoteToCover(p.id); }}
+                disabled={busy}
+                title="Promote to cover"
+                className="absolute inset-0 flex items-center justify-center bg-ink/0 group-hover:bg-ink/40 transition-colors disabled:opacity-50"
+              >
                 <Star size={16} className="text-paper opacity-0 group-hover:opacity-100" />
-              </span>
-            </button>
+              </button>
+            </div>
           ))}
         </div>
       )}
@@ -98,6 +123,15 @@ export function ItemPhotos({
       </label>
       {busy && <p className="text-ink3 text-[12px]">Working…</p>}
       {error && <p className="text-danger text-[12px]">{error}</p>}
+
+      {lightboxIndex !== null && (
+        <PhotoLightbox
+          photos={orderedPhotos}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onNav={setLightboxIndex}
+        />
+      )}
     </div>
   );
 }

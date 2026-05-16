@@ -1,3 +1,5 @@
+import { Avatar } from '@/components/Avatar';
+
 type HistoryEntry = {
   id: string;
   action: string;
@@ -63,17 +65,10 @@ export function HistoryPanel({
             const actorName = e.actor
               ? `${e.actor.display_name}${e.actor.deleted_at ? ' (removed)' : ''}`
               : 'System';
-            const initials = (e.actor?.display_name ?? '?')
-              .split(/\s+/)
-              .map((n) => n[0])
-              .join('')
-              .slice(0, 2)
-              .toUpperCase();
+            const avatarName = e.actor?.display_name ?? '?';
             return (
               <li key={e.id} className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-sand2 text-ink2 flex items-center justify-center text-[11px] font-medium shrink-0">
-                  {initials}
-                </div>
+                <Avatar name={avatarName} size={32} />
                 <div className="min-w-0 flex-1">
                   <p className="text-[13px]">
                     <span className="font-medium text-ink">{actorName}</span>
