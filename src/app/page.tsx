@@ -20,7 +20,7 @@ export default async function HomePage() {
         <div className="max-w-xl text-center space-y-8">
           <p className="text-ink3 text-[12px] uppercase tracking-[0.18em]">Invite only</p>
           <h1 className="text-[40px] lg:text-[56px] font-medium leading-[1.1] text-ink">
-            Inventory by Straighten Up Home.
+            Inventory by Straighten Up.
           </h1>
           <p className="text-ink2 text-[17px] leading-[1.6]">
             A private workspace for Janelle Lam and her clients to catalog,
