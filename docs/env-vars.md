@@ -20,6 +20,7 @@ All env vars used across v1 slices. `.env*` is gitignored — never commit value
 | `RESEND_FROM_EMAIL`               | slice 04 cron, slice 05 invite emails  | server only      | Verified sender on Resend                     |
 | `SHARE_COOKIE_SECRET`             | slice 05 share-session cookie HMAC     | server only      | 32+ random bytes, hex or base64 encoded       |
 | `NEXT_PUBLIC_APP_URL`             | email deep-links, OAuth callback       | client + server  | e.g. `https://inventory.example.com` (prod) or `http://localhost:3000` (dev) |
+| `CRON_SECRET`                     | slice 04 cron route                    | server only      | auto-injected by Vercel for cron; set manually in `.env.local` for local testing |
 
 ## Security rules
 

@@ -1,6 +1,6 @@
 ---
 title: Slice 04 — Comments + notifications
-status: approved
+status: implemented
 slice: 04
 depends_on: [01, 02, 03]
 last_updated: 2026-05-16
