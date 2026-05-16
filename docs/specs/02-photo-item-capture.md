@@ -1,6 +1,6 @@
 ---
 title: Slice 02 — Photo + item capture
-status: approved
+status: implemented
 slice: 02
 depends_on: [01]
 last_updated: 2026-05-16
