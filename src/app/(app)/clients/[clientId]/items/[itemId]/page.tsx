@@ -7,6 +7,7 @@ import { ItemMetadataForm } from './ItemMetadataForm';
 import { ItemPhotos } from './ItemPhotos';
 import { ItemActions } from './ItemActions';
 import { HistoryPanel } from './HistoryPanel';
+import { CommentsPanel } from './CommentsPanel';
 
 export default async function ItemDetailPage({
   params,
@@ -86,6 +87,35 @@ export default async function ItemDetailPage({
     (historyLocations ?? []).map((l) => [l.id, l.name] as const),
   );
 
+  // Comments for this item (oldest-first so newest shows at bottom)
+  const { data: comments } = await supabase
+    .from('comments')
+    .select('id, body, author_id, edited_at, deleted_at, created_at')
+    .eq('item_id', itemId)
+    .order('created_at');
+
+  // Resolve comment author profiles
+  const commentAuthorIds = Array.from(new Set((comments ?? []).map((c) => c.author_id)));
+  const { data: commentAuthors } = commentAuthorIds.length > 0
+    ? await supabase.from('profiles').select('id, display_name, deleted_at').in('id', commentAuthorIds)
+    : { data: [] };
+  const commentAuthorsMap = new Map((commentAuthors ?? []).map((p) => [p.id, p] as const));
+
+  // Mention-eligible users: everyone with access to this client
+  const [{ data: orgUsersRoles }, { data: clientUsersRoles }] = await Promise.all([
+    supabase.from('org_roles').select('user_id, role'),
+    supabase.from('client_memberships').select('user_id, role').eq('client_id', clientId),
+  ]);
+  const mentionEligibleUserIds = new Set<string>();
+  (orgUsersRoles ?? []).forEach((r) => mentionEligibleUserIds.add(r.user_id));
+  (clientUsersRoles ?? []).forEach((r) => mentionEligibleUserIds.add(r.user_id));
+  const { data: mentionableProfiles } = mentionEligibleUserIds.size > 0
+    ? await supabase.from('profiles').select('id, display_name, deleted_at').in('id', Array.from(mentionEligibleUserIds))
+    : { data: [] };
+  const mentionable = (mentionableProfiles ?? [])
+    .filter((p) => p.deleted_at === null)
+    .map((p) => ({ id: p.id, displayName: p.display_name }));
+
   // Pre-sign all photo URLs (server-side)
   const signedUrls = await getSignedPhotoUrlsServer(
     (photos ?? []).map((p) => p.storage_path),
@@ -141,10 +171,20 @@ export default async function ItemDetailPage({
         }))}
       />
 
-      <section className="bg-surface border border-rule rounded-[4px] p-6 space-y-3">
-        <h2 className="text-[18px] font-medium">Comments</h2>
-        <p className="text-ink3 text-[13px]">Coming in slice 04.</p>
-      </section>
+      <CommentsPanel
+        itemId={itemId}
+        comments={(comments ?? []).map((c) => ({
+          id: c.id,
+          body: c.body,
+          authorId: c.author_id,
+          authorDisplayName: commentAuthorsMap.get(c.author_id)?.display_name ?? 'Unknown',
+          authorRemoved: commentAuthorsMap.get(c.author_id)?.deleted_at !== null && commentAuthorsMap.get(c.author_id)?.deleted_at !== undefined,
+          editedAt: c.edited_at,
+          deletedAt: c.deleted_at,
+          createdAt: c.created_at,
+        }))}
+        mentionable={mentionable}
+      />
 
       <HistoryPanel
         entries={(history ?? []).map((h) => ({
