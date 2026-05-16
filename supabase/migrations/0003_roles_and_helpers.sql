@@ -28,12 +28,12 @@ language sql
 security definer
 stable
 as $$
-  select exists (
-    select 1 from public.org_roles where user_id = auth.uid()
-  ) or exists (
-    select 1 from public.client_memberships
-    where user_id = auth.uid() and client_id = target_client_id
-  );
+  select target_client_id is not null
+    and (
+      exists (select 1 from public.org_roles where user_id = auth.uid())
+      or exists (select 1 from public.client_memberships
+                 where user_id = auth.uid() and client_id = target_client_id)
+    );
 $$;
 
 -- client_for_item: convenience for policies that need to derive client_id from item_id
