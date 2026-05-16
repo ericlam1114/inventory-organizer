@@ -44,7 +44,18 @@ begin
     created_at,
     updated_at,
     raw_app_meta_data,
-    raw_user_meta_data
+    raw_user_meta_data,
+    -- Token columns MUST be empty string, not NULL.
+    -- Supabase Auth's internal queries fail with "Database error finding user"
+    -- on signInWithOtp if any of these are NULL when the row was created via
+    -- direct SQL insert (default column values vary by Supabase version).
+    confirmation_token,
+    recovery_token,
+    email_change_token_current,
+    email_change_token_new,
+    email_change,
+    phone_change_token,
+    reauthentication_token
   )
   values (
     gen_random_uuid(),
@@ -57,9 +68,26 @@ begin
     now(),
     now(),
     '{}'::jsonb,
-    '{}'::jsonb
+    '{}'::jsonb,
+    '', '', '', '', '', '', ''
   )
   returning id into v_uid;
+
+  -- Identity row: signInWithOtp requires an auth.identities row for the email provider.
+  -- Without this, signInWithOtp(shouldCreateUser: false) fails with "user not found"
+  -- even though the auth.users row exists.
+  insert into auth.identities (
+    id, user_id, identity_data, provider, provider_id,
+    last_sign_in_at, created_at, updated_at
+  )
+  values (
+    gen_random_uuid(),
+    v_uid,
+    jsonb_build_object('sub', v_uid::text, 'email', v_email, 'email_verified', true),
+    'email',
+    v_uid::text,
+    now(), now(), now()
+  );
 
   -- Profile row
   insert into public.profiles (id, email, display_name)
