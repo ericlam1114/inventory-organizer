@@ -1,6 +1,6 @@
 ---
 title: Slice 03 — Move / audit log
-status: approved
+status: implemented
 slice: 03
 depends_on: [01, 02]
 last_updated: 2026-05-16
