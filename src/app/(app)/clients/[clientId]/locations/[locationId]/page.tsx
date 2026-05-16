@@ -72,12 +72,20 @@ export default async function LocationPage({
 
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-[32px] font-medium leading-[40px]">{location.name}</h1>
-        <Link
-          href={`/clients/${clientId}/locations/new?parent=${locationId}`}
-          className="inline-flex items-center gap-2 bg-surface border border-rule text-ink px-3 py-2 rounded-[2px] hover:bg-paper text-[13px]"
-        >
-          <Plus size={14} /> Sub-location
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/clients/${clientId}/shares`}
+            className="inline-flex items-center gap-2 bg-surface border border-rule text-ink px-3 py-2 rounded-[2px] hover:bg-paper text-[13px]"
+          >
+            Shares
+          </Link>
+          <Link
+            href={`/clients/${clientId}/locations/new?parent=${locationId}`}
+            className="inline-flex items-center gap-2 bg-surface border border-rule text-ink px-3 py-2 rounded-[2px] hover:bg-paper text-[13px]"
+          >
+            <Plus size={14} /> Sub-location
+          </Link>
+        </div>
       </div>
 
       {(childLocations && childLocations.length > 0) && (
