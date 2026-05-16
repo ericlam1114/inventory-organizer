@@ -17,7 +17,8 @@ export default function LoginPage() {
           src="/logo-dark.svg"
           alt="Straighten Up"
           width={180}
-          height={48}
+          height={53}
+          style={{ height: 'auto', width: 'auto', margin: '0 auto' }}
           priority
         />
         <p className="text-ink3 text-[12px] tracking-wide">

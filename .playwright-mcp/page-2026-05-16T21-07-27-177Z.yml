@@ -1,0 +1,14 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "Straighten Up" [ref=e4] [cursor=pointer]:
+        - /url: /clients
+        - img "Straighten Up" [ref=e5]
+      - generic [ref=e6]:
+        - img "Notifications" [ref=e7]
+        - img "Profile" [ref=e10]
+    - generic [ref=e14]:
+      - heading "Miley Cyrus" [level=1] [ref=e15]
+      - paragraph [ref=e16]: Locations + inventory will land here in slice 02. For now, this is just proof RLS is working.
+  - button "Open Next.js Dev Tools" [ref=e22] [cursor=pointer]:
+    - img [ref=e23]

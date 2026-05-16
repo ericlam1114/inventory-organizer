@@ -1,0 +1,23 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "Straighten Up" [ref=e4] [cursor=pointer]:
+        - /url: /clients
+        - img "Straighten Up" [ref=e5]
+      - generic [ref=e6]:
+        - img "Notifications" [ref=e7]
+        - img "Profile" [ref=e10]
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - heading "Clients" [level=1] [ref=e16]
+        - link "+ New client" [ref=e17] [cursor=pointer]:
+          - /url: /clients/new
+      - list [ref=e18]:
+        - listitem [ref=e19]:
+          - link "Miley Cyrus" [ref=e20] [cursor=pointer]:
+            - /url: /clients/ce948edc-2026-4c05-83ad-6289d15478d3
+        - listitem [ref=e21]:
+          - link "Sydney Sweeney" [ref=e22] [cursor=pointer]:
+            - /url: /clients/67fcf6f2-d800-4205-8a2a-f1bfdb9d8662
+  - button "Open Next.js Dev Tools" [ref=e28] [cursor=pointer]:
+    - img [ref=e29]

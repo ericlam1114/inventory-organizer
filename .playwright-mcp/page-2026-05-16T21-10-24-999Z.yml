@@ -1,0 +1,22 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - link "Straighten Up" [ref=e4] [cursor=pointer]:
+        - /url: /clients
+        - img "Straighten Up" [ref=e5]
+      - generic [ref=e6]:
+        - img "Notifications" [ref=e7]
+        - img "Profile" [ref=e10]
+    - generic [ref=e14]:
+      - heading "Invite client admin" [level=1] [ref=e15]
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - generic [ref=e18]: Email
+          - textbox "Email" [ref=e19]
+        - generic [ref=e20]:
+          - generic [ref=e21]: Display name
+          - textbox "Display name" [ref=e22]
+        - button "Send invite" [ref=e23]
+  - button "Open Next.js Dev Tools" [ref=e29] [cursor=pointer]:
+    - img [ref=e30]
+  - alert [ref=e33]
