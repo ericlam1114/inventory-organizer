@@ -9,6 +9,7 @@ amendments:
   - 2026-05-16 (slice 03): dropped 'moved' from items.status enum (moves are audit entries, not a status)
   - 2026-05-16 (cross-slice review): added profiles.email mirrored column; added client_for_item() helper; clarified audit_log.target_type values to 'item' | 'comment' | 'share'; documented default-deny RLS pattern for audit_log INSERT
   - 2026-05-16 (Next.js 16 reality-check): renamed middleware.ts → proxy.ts (Next.js 16 convention — functionality unchanged)
+  - 2026-05-16 (T2 review): dropped sync_profile_email trigger (Supabase doesn't allow public-schema triggers on auth.users); item_photos.uploaded_by → nullable + on delete set null
 ---
 
 # Slice 01 — Foundation (auth, tenancy, data model)
@@ -70,12 +71,12 @@ audit_log                   — append-only log of mutations; populated starting
 ```sql
 -- profiles
 id uuid primary key references auth.users(id) on delete cascade,
-email text not null,                              -- mirrored from auth.users.email via trigger; cron queries don't need to JOIN auth
+email text not null,                              -- populated by the invite flow at profile-creation time; no auto-sync from auth.users.
 display_name text not null,
 avatar_url text,
 created_at timestamptz default now()
--- A trigger on auth.users INSERT/UPDATE keeps profiles.email in sync;
--- slice 04's email cron reads from profiles.email directly.
+-- email is populated by the invite flow at profile-creation time; no auto-sync from auth.users.
+-- (Supabase doesn't allow public-schema triggers on auth.users. Update profiles.email manually or via app-level RPC if email changes.)
 
 -- clients
 id uuid primary key default gen_random_uuid(),
@@ -103,7 +104,7 @@ created_at timestamptz default now()
 id uuid primary key default gen_random_uuid(),
 item_id uuid not null references items(id) on delete cascade,
 storage_path text not null,  -- clients/{client_id}/items/{item_id}/{uuid}.{ext}
-uploaded_by uuid not null references auth.users(id),
+uploaded_by uuid references auth.users(id) on delete set null,
 created_at timestamptz default now()
 -- Cover photo is denoted by items.cover_photo_id; everything else is secondary by absence.
 
