@@ -17,7 +17,7 @@ create table public.item_photos (
   id            uuid primary key default gen_random_uuid(),
   item_id       uuid not null references public.items(id) on delete cascade,
   storage_path  text not null,
-  uploaded_by   uuid not null references auth.users(id),
+  uploaded_by   uuid references auth.users(id) on delete set null,
   created_at    timestamptz not null default now()
 );
 create index item_photos_item_idx on public.item_photos(item_id);
