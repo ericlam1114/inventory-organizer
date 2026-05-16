@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Search } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getSignedPhotoUrlsServer } from '@/lib/photos/public-url.server';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -81,7 +81,7 @@ export default async function SearchPage({
         <ChevronLeft size={14} /> Back
       </Link>
 
-      <h1 className="text-[32px] font-medium leading-[40px]">Search</h1>
+      <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">Search</h1>
 
       <form className="flex gap-2" action="" method="get">
         <input
@@ -118,9 +118,25 @@ export default async function SearchPage({
       </div>
 
       {!q && !status ? (
-        <p className="text-ink3 text-[15px]">Type to search items across all locations for this client.</p>
+        <div className="bg-surface border border-rule rounded-[4px] py-12 px-6 text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-sand2 text-ink2 mb-4">
+            <Search size={20} />
+          </div>
+          <h3 className="text-[16px] font-medium mb-1">Search items</h3>
+          <p className="text-ink3 text-[14px] max-w-xs mx-auto">
+            Type a title or description to search across all locations for this client.
+          </p>
+        </div>
       ) : results.length === 0 ? (
-        <p className="text-ink3 text-[15px]">No matches.</p>
+        <div className="bg-surface border border-rule rounded-[4px] py-12 px-6 text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-sand2 text-ink2 mb-4">
+            <Search size={20} />
+          </div>
+          <h3 className="text-[16px] font-medium mb-1">No matches</h3>
+          <p className="text-ink3 text-[14px] max-w-xs mx-auto">
+            Try a different term or clear the status filter.
+          </p>
+        </div>
       ) : (
         <ul className="space-y-3">
           {results.map((r) => {

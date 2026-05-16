@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { Bell } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
+import { Avatar } from '@/components/Avatar';
 
 export default async function NotificationsPage({
   searchParams,
@@ -44,7 +46,7 @@ export default async function NotificationsPage({
 
   return (
     <div className="max-w-3xl mx-auto p-8 lg:p-12 space-y-6">
-      <h1 className="text-[32px] font-medium leading-[40px]">Notifications</h1>
+      <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">Notifications</h1>
       <div className="flex gap-2">
         <Link
           href="/notifications"
@@ -61,25 +63,37 @@ export default async function NotificationsPage({
       </div>
 
       {(!notifs || notifs.length === 0) ? (
-        <p className="text-ink3 text-[15px]">No notifications.</p>
+        <div className="bg-surface border border-rule rounded-[4px] py-12 px-6 text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-sand2 text-ink2 mb-4">
+            <Bell size={20} />
+          </div>
+          <h3 className="text-[16px] font-medium mb-1">All caught up</h3>
+          <p className="text-ink3 text-[14px] max-w-xs mx-auto">
+            {"We'll let you know when someone @mentions you."}
+          </p>
+        </div>
       ) : (
         <ul className="space-y-2">
           {notifs.map((n) => {
             const c = cBy.get(n.source_comment_id);
             const i = iBy.get(n.source_item_id);
             const author = c ? pBy.get(c.author_id) : null;
+            const authorName = author?.display_name ?? 'Someone';
             const bodyText = c?.body ? c.body.replace(/@\[([^\]]+)\]\([0-9a-f-]{36}\)/g, '@$1') : '';
             return (
               <li key={n.id}>
                 <Link
                   href={`/clients/${n.client_id}/items/${n.source_item_id}#comment-${n.source_comment_id}`}
-                  className="block bg-surface border border-rule rounded-[4px] p-4 hover:bg-paper flex items-start gap-3"
+                  className="block bg-surface border border-rule rounded-[4px] p-4 hover:bg-paper"
                 >
-                  {!n.read_at && <span className="w-2 h-2 rounded-full bg-info mt-1.5 shrink-0" />}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[14px]"><span className="font-medium">{author?.display_name ?? 'Someone'}</span> mentioned you on &ldquo;{i?.title ?? 'an item'}&rdquo;</p>
-                    {bodyText && <p className="text-ink3 text-[12px] truncate mt-1">— {bodyText}</p>}
-                    <p className="text-ink3 text-[11px] mt-1">{new Date(n.created_at).toLocaleString()}</p>
+                  <div className="flex items-start gap-3">
+                    {!n.read_at && <span className="w-2 h-2 rounded-full bg-info mt-1.5 shrink-0" />}
+                    <Avatar name={authorName} size={32} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14px]"><span className="font-medium">{authorName}</span> mentioned you on &ldquo;{i?.title ?? 'an item'}&rdquo;</p>
+                      {bodyText && <p className="text-ink3 text-[12px] truncate mt-1">— {bodyText}</p>}
+                      <p className="text-ink3 text-[11px] mt-1">{new Date(n.created_at).toLocaleString()}</p>
+                    </div>
                   </div>
                 </Link>
               </li>

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Plus, ChevronLeft } from 'lucide-react';
+import { Plus, ChevronLeft, Sliders } from 'lucide-react';
 import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
@@ -53,7 +53,7 @@ export default async function FieldsPage({ params }: { params: Promise<{ clientI
       <div className="flex items-center justify-between">
         <div>
           <p className="text-ink3 text-[13px] uppercase tracking-wide">Settings · {client.name}</p>
-          <h1 className="text-[32px] font-medium leading-[40px] mt-1">Custom fields</h1>
+          <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2] mt-1">Custom fields</h1>
         </div>
         <Link
           href={`/clients/${clientId}/settings/fields/new`}
@@ -64,10 +64,20 @@ export default async function FieldsPage({ params }: { params: Promise<{ clientI
       </div>
 
       {(!fields || fields.length === 0) ? (
-        <div className="bg-surface border border-rule rounded-[4px] p-8 text-center">
-          <p className="text-ink3 text-[15px]">
-            No custom fields yet. Add &ldquo;Designer&rdquo;, &ldquo;When worn&rdquo;, etc. to capture richer metadata on items.
+        <div className="bg-surface border border-rule rounded-[4px] py-12 px-6 text-center">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-sand2 text-ink2 mb-4">
+            <Sliders size={20} />
+          </div>
+          <h3 className="text-[16px] font-medium mb-1">No custom fields</h3>
+          <p className="text-ink3 text-[14px] mb-5 max-w-xs mx-auto">
+            Add fields like &ldquo;Designer&rdquo; or &ldquo;When worn&rdquo; to capture richer metadata on items.
           </p>
+          <Link
+            href={`/clients/${clientId}/settings/fields/new`}
+            className="inline-flex items-center gap-2 bg-ink text-paper px-4 py-2.5 rounded-[2px] hover:bg-ink2 text-[13px] font-medium"
+          >
+            <Plus size={14} /> New field
+          </Link>
         </div>
       ) : (
         <ul className="space-y-3">

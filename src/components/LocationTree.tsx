@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Folder } from 'lucide-react';
+import { Folder, FolderPlus } from 'lucide-react';
 
 type Location = { id: string; name: string; parent_location_id: string | null };
 
@@ -44,9 +44,16 @@ function TreeNode({ clientId, location, byParent, depth }: {
 export function LocationTree({ clientId, locations }: { clientId: string; locations: Location[] }) {
   if (locations.length === 0) {
     return (
-      <div className="bg-surface border border-rule rounded-[4px] p-8 text-center">
-        <p className="text-ink3 text-[15px]">
-          No locations yet. Click <strong>New location</strong> to add the first room or storage unit.
+      <div className="bg-surface border border-rule rounded-[4px] py-12 px-6 text-center">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-sand2 text-ink2 mb-4">
+          <FolderPlus size={20} />
+        </div>
+        <h3 className="text-[16px] font-medium mb-1">No locations yet</h3>
+        <p className="text-ink3 text-[14px] mb-5 max-w-xs mx-auto">
+          Add your first room or storage unit to start organizing inventory.
+        </p>
+        <p className="text-ink3 text-[13px]">
+          Click <strong className="text-ink">New location</strong> above to get started.
         </p>
       </div>
     );
