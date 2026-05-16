@@ -19,7 +19,7 @@ Start here: [`00-master.md`](./00-master.md) — full project vision, users, dat
 | 02  | Photo + item capture — upload, metadata, grid + sheet     | **code complete** ✅ | [`specs/02-photo-item-capture.md`](./specs/02-photo-item-capture.md) |
 | 03  | Move / audit log — one-click move, who-did-what trail     | **code complete** ✅ | [`specs/03-move-audit-log.md`](./specs/03-move-audit-log.md) |
 | 04  | Comments + notifications                                  | **code complete** ✅ | [`specs/04-comments-notifications.md`](./specs/04-comments-notifications.md) |
-| 05  | Sharing + filtered export — agent / insurance access      | **approved** | [`specs/05-sharing-export.md`](./specs/05-sharing-export.md) |
+| 05  | Sharing + filtered export — agent / insurance access      | **code complete** ✅ | [`specs/05-sharing-export.md`](./specs/05-sharing-export.md) |
 | 06  | QR codes — physical unit → digital list                   | **deferred** | not specced — Janelle hasn't validated; revisit if she asks |
 | 07  | Move-in tour mode — housekeeper / new-place orientation   | **deferred** | not specced — Janelle hasn't validated; even Eric wasn't sure what it is. Revisit if she asks. |
 

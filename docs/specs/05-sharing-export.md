@@ -1,6 +1,6 @@
 ---
 title: Slice 05 — Sharing + filtered export
-status: approved
+status: implemented
 slice: 05
 depends_on: [01, 02, 03]
 last_updated: 2026-05-16
