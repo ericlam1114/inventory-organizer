@@ -13,7 +13,8 @@ alter table public.audit_log           enable row level security;
 create policy profiles_select on public.profiles for select
   using (auth.uid() is not null);
 create policy profiles_update_own on public.profiles for update
-  using (auth.uid() = id);
+  using      (auth.uid() = id)
+  with check (auth.uid() = id);
 
 -- clients: visible per can_access_client; only super_admin can write.
 create policy clients_select on public.clients for select
@@ -71,6 +72,14 @@ create policy memberships_select on public.client_memberships for select
   using (public.can_access_client(client_id));
 create policy memberships_write on public.client_memberships for all
   using (
+    exists (select 1 from public.org_roles
+            where user_id = auth.uid() and role = 'super_admin')
+    or exists (select 1 from public.client_memberships m
+               where m.user_id = auth.uid()
+                 and m.client_id = client_memberships.client_id
+                 and m.role = 'client_admin')
+  )
+  with check (
     exists (select 1 from public.org_roles
             where user_id = auth.uid() and role = 'super_admin')
     or exists (select 1 from public.client_memberships m
