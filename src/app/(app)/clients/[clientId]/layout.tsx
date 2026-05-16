@@ -23,7 +23,7 @@ export default async function ClientLayout({
 
   return (
     <>
-      <div className="pb-24">{children}</div>
+      <div style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}>{children}</div>
       <ClientBottomNav />
     </>
   );

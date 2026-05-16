@@ -16,7 +16,10 @@ export function ClientBottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-surface border-t border-rule h-14 flex items-center justify-around px-4 z-40">
+    <nav
+      className="fixed bottom-0 left-0 right-0 bg-surface border-t border-rule flex items-center justify-around px-4 pt-2 pb-3 z-40"
+      style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+    >
       {tabs.map(({ href, label, icon: Icon, active, primary }) => (
         <Link
           key={href}

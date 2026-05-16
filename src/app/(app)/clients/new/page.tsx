@@ -11,7 +11,7 @@ export default function NewClientPage() {
 
   return (
     <div className="max-w-md mx-auto space-y-8">
-      <h1 className="text-[32px] font-medium leading-[40px]">New client</h1>
+      <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">New client</h1>
       <form action={action} className="space-y-5">
         <div>
           <label htmlFor="name" className="block text-[13px] font-medium mb-2">

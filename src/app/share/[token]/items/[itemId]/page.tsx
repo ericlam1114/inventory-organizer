@@ -131,7 +131,7 @@ export default async function ShareItemPage({
         )}
 
         <div className="flex items-start justify-between gap-4">
-          <h1 className="text-[32px] font-medium leading-[40px] flex-1">{item.title}</h1>
+          <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2] flex-1">{item.title}</h1>
           <StatusBadge status={item.status as 'active' | 'donated' | 'archived'} />
         </div>
 

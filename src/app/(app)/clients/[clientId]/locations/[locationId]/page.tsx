@@ -71,7 +71,7 @@ export default async function LocationPage({
       </Link>
 
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-[32px] font-medium leading-[40px]">{location.name}</h1>
+        <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">{location.name}</h1>
         <div className="flex items-center gap-2">
           <Link
             href={`/clients/${clientId}/shares`}

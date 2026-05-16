@@ -30,7 +30,7 @@ export default async function ClientsPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-[32px] font-medium leading-[40px]">Clients</h1>
+        <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">Clients</h1>
         {isSuperAdmin && (
           <Link
             href="/clients/new"
