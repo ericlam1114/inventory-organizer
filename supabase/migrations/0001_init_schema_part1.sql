@@ -9,20 +9,11 @@ create table public.profiles (
   created_at   timestamptz not null default now()
 );
 
--- Keep profiles.email in sync with auth.users.email
-create or replace function public.sync_profile_email()
-returns trigger language plpgsql security definer as $$
-begin
-  update public.profiles
-    set email = NEW.email
-    where id = NEW.id;
-  return NEW;
-end $$;
-
-create trigger sync_profile_email_on_auth_user_update
-  after update of email on auth.users
-  for each row when (NEW.email is distinct from OLD.email)
-  execute function public.sync_profile_email();
+-- profiles.email is set at app-layer insert time (e.g. in the invite flow:
+-- inviteUserByEmail → upsert profiles row with email + display_name).
+-- We don't mirror auth.users.email automatically because Supabase doesn't allow
+-- public-schema triggers on auth.users. If an email change is needed, update
+-- profiles.email manually or via an app-level RPC.
 
 -- clients = the celebrity/household entity
 create table public.clients (
