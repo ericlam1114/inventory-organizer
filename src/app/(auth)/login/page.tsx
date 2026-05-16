@@ -22,7 +22,7 @@ export default function LoginPage() {
           priority
         />
         <p className="text-ink3 text-[12px] tracking-wide">
-          Inventory · Straighten Up
+          Inventory · Straighten Up Home
         </p>
       </div>
 
