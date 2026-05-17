@@ -14,7 +14,7 @@ export default function NewClientPage() {
       <div className="mb-8">
         <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em]">New client</h1>
       </div>
-      <div className="max-w-md bg-surface border border-rule rounded-[4px] p-6 lg:p-8">
+      <div className="max-w-md mx-auto bg-surface border border-rule rounded-[4px] p-6 lg:p-8">
         <form action={action} className="space-y-5">
           <div>
             <label htmlFor="name" className="block text-[13px] font-medium mb-2">

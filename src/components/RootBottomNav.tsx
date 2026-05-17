@@ -2,13 +2,17 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Users, Bell, UserCircle } from 'lucide-react';
+import { useMobileNavOpen } from '@/lib/mobile-nav-store';
 
 export function RootBottomNav() {
   const pathname = usePathname();
+  const drawerOpen = useMobileNavOpen();
   // Hide on client-context paths (the ClientBottomNav handles those)
   if (pathname.startsWith('/clients/') && pathname.split('/').length > 2) return null;
   // Hide on share/auth/login paths (no nav chrome there)
   if (pathname.startsWith('/share') || pathname.startsWith('/login') || pathname.startsWith('/auth')) return null;
+  // Hide while the hamburger drawer is open
+  if (drawerOpen) return null;
 
   const tabs = [
     { href: '/clients',       label: 'Clients',       icon: Users,      active: pathname === '/clients' },

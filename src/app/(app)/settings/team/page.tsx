@@ -28,7 +28,7 @@ export default function TeamSettingsPage() {
       {state.sent ? (
         <p className="text-ink2">Invite sent. They&apos;ll get an email with a magic link.</p>
       ) : (
-        <div className="max-w-md bg-surface border border-rule rounded-[4px] p-6 lg:p-8">
+        <div className="max-w-md mx-auto bg-surface border border-rule rounded-[4px] p-6 lg:p-8">
           <form action={action} className="space-y-5">
             <div>
               <label htmlFor="email" className="block text-[13px] font-medium mb-2">Email</label>

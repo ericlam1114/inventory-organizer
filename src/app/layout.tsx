@@ -1,6 +1,5 @@
 import './globals.css';
 import { Inter, Cormorant_Garamond } from 'next/font/google';
-import { Toaster } from '@/components/Toaster';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 const cormorant = Cormorant_Garamond({
@@ -11,16 +10,17 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata = {
-  title: 'Straighten Up · Inventory',
+  title: 'Inventory by Straighten Up',
 };
+
+// <Toaster /> is mounted inside AppShell, the (app) layout, instead of here
+// so image-generation routes (/icon, /apple-icon, /opengraph-image) don't
+// transitively pull in lucide-react and break the production prerender.
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
-      <body>
-        {children}
-        <Toaster />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

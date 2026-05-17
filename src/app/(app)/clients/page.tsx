@@ -2,18 +2,26 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
-export default async function ClientsPage() {
+export default async function ClientsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const supabase = await createClient();
+  const sp = await searchParams;
+  const q = (sp.q ?? '').trim();
 
-  const { data: clients, error } = await supabase
-    .from('clients')
-    .select('id, name')
-    .order('name');
+  let query = supabase.from('clients').select('id, name').order('name');
+  if (q) {
+    const escaped = q.replace(/[%_]/g, (c) => `\\${c}`);
+    query = query.ilike('name', `%${escaped}%`);
+  }
+  const { data: clients, error } = await query;
 
   if (error) throw error;
 
-  // If user has access to exactly 1 client, jump straight in.
-  if (clients && clients.length === 1) {
+  // Only auto-redirect when not filtering — searching with 1 result should still show the list.
+  if (!q && clients && clients.length === 1) {
     redirect(`/clients/${clients[0].id}`);
   }
 
@@ -33,7 +41,14 @@ export default async function ClientsPage() {
         <div>
           <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em]">Clients</h1>
           <p className="text-ink3 text-[14px] mt-1">
-            {(clients ?? []).length} client{(clients ?? []).length !== 1 ? 's' : ''}
+            {q
+              ? `${(clients ?? []).length} match${(clients ?? []).length === 1 ? '' : 'es'} for "${q}"`
+              : `${(clients ?? []).length} client${(clients ?? []).length === 1 ? '' : 's'}`}
+            {q && (
+              <Link href="/clients" className="ml-2 underline-offset-2 hover:underline">
+                Clear
+              </Link>
+            )}
           </p>
         </div>
         {isSuperAdmin && (
@@ -46,7 +61,9 @@ export default async function ClientsPage() {
         )}
       </div>
       {clients && clients.length === 0 ? (
-        isSuperAdmin ? (
+        q ? (
+          <p className="text-ink3">No clients match &ldquo;{q}&rdquo;. <Link href="/clients" className="underline-offset-2 hover:underline">Clear search</Link>.</p>
+        ) : isSuperAdmin ? (
           <p className="text-ink3">No clients yet. Click <strong>+ New client</strong> to add your first one.</p>
         ) : (
           <p className="text-ink3">You have no access. Ask Janelle for an invite.</p>

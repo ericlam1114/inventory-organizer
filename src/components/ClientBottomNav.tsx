@@ -3,11 +3,16 @@
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
 import { Compass, Camera, Search } from 'lucide-react';
+import { useMobileNavOpen } from '@/lib/mobile-nav-store';
 
 export function ClientBottomNav() {
   const params = useParams<{ clientId: string }>();
   const pathname = usePathname();
+  const drawerOpen = useMobileNavOpen();
   const base = `/clients/${params.clientId}`;
+
+  // Hide while the hamburger drawer is open
+  if (drawerOpen) return null;
 
   const tabs = [
     {
