@@ -1,4 +1,5 @@
 import './globals.css';
+import type { Metadata } from 'next';
 import { Inter, Cormorant_Garamond } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
@@ -9,8 +10,30 @@ const cormorant = Cormorant_Garamond({
   variable: '--font-display',
 });
 
-export const metadata = {
-  title: 'Inventory by Straighten Up',
+const siteUrl =
+  process.env.NEXT_PUBLIC_APP_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+
+const title = 'Inventory by Straighten Up';
+const description =
+  'A private workspace to catalog, track, and share archived wardrobes, furniture, and personal collections.';
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+  title,
+  description,
+  openGraph: {
+    type: 'website',
+    siteName: 'Inventory by Straighten Up',
+    title,
+    description,
+    url: '/',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title,
+    description,
+  },
 };
 
 // <Toaster /> is mounted inside AppShell, the (app) layout, instead of here
