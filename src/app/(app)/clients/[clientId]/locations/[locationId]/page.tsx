@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getSignedPhotoUrlsServer } from '@/lib/photos/public-url.server';
 import { LocationItemsView } from './LocationItemsView';
+import { groupItemsByTime } from '@/components/TimeGroupedItems';
 
 export default async function LocationPage({
   params,
@@ -60,6 +61,20 @@ export default async function LocationPage({
   }
 
   const needsCount = (items ?? []).filter((i) => i.needs_metadata).length;
+  const totalCount = (items ?? []).length;
+
+  const mappedItems = (items ?? []).map((i) => ({
+    id: i.id,
+    title: i.title,
+    description: i.description ?? '',
+    status: i.status as 'active' | 'donated' | 'archived',
+    metadata: (i.metadata ?? {}) as Record<string, string>,
+    needsMetadata: i.needs_metadata as boolean,
+    createdAt: i.created_at,
+    coverSignedUrl: i.cover_photo_id ? (signedByPath.get(coverPathByItemId.get(i.id) ?? '') ?? null) : null,
+  }));
+
+  const groups = groupItemsByTime(mappedItems);
 
   return (
     <div className="max-w-5xl mx-auto p-6 lg:p-12 space-y-6">
@@ -71,8 +86,18 @@ export default async function LocationPage({
       </Link>
 
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">{location.name}</h1>
-        <div className="flex items-center gap-2">
+        <div>
+          <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">
+            {location.name}
+          </h1>
+          <p className="text-ink3 text-[13px] mt-1">
+            {totalCount} item{totalCount !== 1 ? 's' : ''}
+            {needsCount > 0 && !filterNeeds && (
+              <span className="text-warning"> · {needsCount} need metadata</span>
+            )}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
           <Link
             href={`/clients/${clientId}/shares`}
             className="inline-flex items-center gap-2 bg-surface border border-rule text-ink px-3 py-2 rounded-[2px] hover:bg-paper text-[13px]"
@@ -111,13 +136,13 @@ export default async function LocationPage({
           {/* View toggle */}
           <Link
             href={`/clients/${clientId}/locations/${locationId}?view=grid${filterNeeds ? '&filter=needs' : ''}`}
-            className={`px-3 py-1.5 rounded-[2px] text-[13px] ${view === 'grid' ? 'bg-ink text-paper' : 'bg-surface border border-rule text-ink2 hover:text-ink'}`}
+            className={`px-3 py-1.5 rounded-full text-[13px] transition-colors ${view === 'grid' ? 'bg-sand2 text-ink font-medium' : 'bg-surface border border-rule text-ink2 hover:text-ink'}`}
           >
             Grid
           </Link>
           <Link
             href={`/clients/${clientId}/locations/${locationId}?view=sheet${filterNeeds ? '&filter=needs' : ''}`}
-            className={`px-3 py-1.5 rounded-[2px] text-[13px] ${view === 'sheet' ? 'bg-ink text-paper' : 'bg-surface border border-rule text-ink2 hover:text-ink'}`}
+            className={`px-3 py-1.5 rounded-full text-[13px] transition-colors ${view === 'sheet' ? 'bg-sand2 text-ink font-medium' : 'bg-surface border border-rule text-ink2 hover:text-ink'}`}
           >
             Sheet
           </Link>
@@ -139,16 +164,8 @@ export default async function LocationPage({
       <LocationItemsView
         clientId={clientId}
         view={view}
-        items={(items ?? []).map((i) => ({
-          id: i.id,
-          title: i.title,
-          description: i.description ?? '',
-          status: i.status as 'active' | 'donated' | 'archived',
-          metadata: (i.metadata ?? {}) as Record<string, string>,
-          needsMetadata: i.needs_metadata as boolean,
-          createdAt: i.created_at,
-          coverSignedUrl: i.cover_photo_id ? (signedByPath.get(coverPathByItemId.get(i.id) ?? '') ?? null) : null,
-        }))}
+        items={mappedItems}
+        groups={groups}
         fields={(fields ?? []).map((f) => ({
           id: f.id,
           name: f.name,

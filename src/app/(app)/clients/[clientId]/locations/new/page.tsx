@@ -8,7 +8,7 @@ export default function NewLocationPage({
   searchParams,
 }: {
   params: Promise<{ clientId: string }>;
-  searchParams: Promise<{ parent?: string }>;
+  searchParams: Promise<{ parent?: string; name?: string }>;
 }) {
   const { clientId } = use(params);
   const sp = use(searchParams);
@@ -23,6 +23,7 @@ export default function NewLocationPage({
           <label htmlFor="name" className="block text-[13px] font-medium mb-2">Name</label>
           <input
             id="name" name="name" type="text" required
+            defaultValue={sp.name ?? ''}
             placeholder="e.g. Bentley · Pink closet"
             className="w-full bg-surface border border-rule px-3 py-2.5 rounded-[2px] focus:outline-none focus:border-ink focus:ring-2 focus:ring-ink/10"
           />

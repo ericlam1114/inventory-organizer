@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ImageOff } from 'lucide-react';
 import { PhotoGrid } from './PhotoGrid';
 import { ItemSheet } from './ItemSheet';
+import type { ItemGroup } from '@/components/TimeGroupedItems';
 
 type Item = {
   id: string;
@@ -25,8 +26,14 @@ type Field = {
 };
 
 export function LocationItemsView({
-  clientId, view, items, fields,
-}: { clientId: string; view: 'grid' | 'sheet'; items: Item[]; fields: Field[] }) {
+  clientId, view, items, groups, fields,
+}: {
+  clientId: string;
+  view: 'grid' | 'sheet';
+  items: Item[];
+  groups: ItemGroup[];
+  fields: Field[];
+}) {
   if (items.length === 0) {
     return (
       <div className="bg-surface border border-rule rounded-[4px] py-12 px-6 text-center">
@@ -46,7 +53,22 @@ export function LocationItemsView({
       </div>
     );
   }
-  return view === 'grid'
-    ? <PhotoGrid clientId={clientId} items={items} />
-    : <ItemSheet clientId={clientId} items={items} fields={fields} />;
+
+  if (view === 'sheet') {
+    return <ItemSheet clientId={clientId} items={items} fields={fields} />;
+  }
+
+  // Grid view — time-grouped
+  return (
+    <div className="space-y-8">
+      {groups.map((group) => (
+        <section key={group.label} className="space-y-3">
+          <h3 className="text-[11px] uppercase tracking-wide text-ink3 font-medium">
+            {group.label}
+          </h3>
+          <PhotoGrid clientId={clientId} items={group.items} />
+        </section>
+      ))}
+    </div>
+  );
 }
