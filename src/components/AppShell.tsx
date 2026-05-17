@@ -3,20 +3,34 @@ import { Brand } from './Brand';
 import { NotificationBell } from './NotificationBell';
 import { ProfileMenu } from './ProfileMenu';
 import { Toaster } from './Toaster';
+import { GlobalSearch } from './GlobalSearch';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-paper">
-      <header className="bg-ink h-14 lg:h-16 flex items-center justify-between px-6 lg:px-8 sticky top-0 z-30">
-        <Link href="/clients" className="flex items-center">
+      {/* Top header band */}
+      <header className="bg-ink h-14 lg:h-16 flex items-center gap-4 px-4 lg:px-6 sticky top-0 z-30">
+        <Link href="/clients" className="flex items-center shrink-0">
           <Brand variant="light" size={28} />
         </Link>
-        <div className="flex items-center gap-4">
+
+        {/* Global search — desktop only, grows to fill space */}
+        <div className="flex-1 flex items-center min-w-0">
+          <GlobalSearch />
+        </div>
+
+        {/* Right actions */}
+        <div className="flex items-center gap-4 shrink-0">
           <NotificationBell />
           <ProfileMenu />
         </div>
       </header>
-      <div className="flex-1 p-8 lg:p-12">{children}</div>
+
+      {/* Body: sidebar + main content laid out via CSS margin on desktop */}
+      <div className="flex flex-1">
+        {children}
+      </div>
+
       <Toaster />
     </div>
   );
