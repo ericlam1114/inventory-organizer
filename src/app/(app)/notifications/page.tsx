@@ -47,7 +47,7 @@ export default async function NotificationsPage({
   return (
     <div className="w-full max-w-5xl px-6 lg:px-12 py-8 lg:py-12 space-y-6">
       <div>
-        <h1 className="text-[28px] sm:text-[32px] lg:text-[40px] font-medium leading-[1.15]">Notifications</h1>
+        <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em]">Notifications</h1>
         <p className="text-ink3 text-[14px] mt-1">
           {(notifs ?? []).filter((n) => !n.read_at).length} unread
         </p>

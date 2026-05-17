@@ -90,7 +90,7 @@ export default async function SearchPage({
       </Link>
 
       <div>
-        <h1 className="text-[28px] sm:text-[32px] lg:text-[40px] font-medium leading-[1.15]">Search</h1>
+        <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em]">Search</h1>
         <p className="text-ink3 text-[13px] mt-1">
           {q ? `${results.length} result${results.length !== 1 ? 's' : ''}` : `Across ${clientName}`}
         </p>
@@ -164,7 +164,7 @@ export default async function SearchPage({
                 >
                   <div className="relative w-10 h-10 bg-paper shrink-0">
                     {cover && (
-                      <Image src={cover} alt="" fill className="object-cover" sizes="40px" />
+                      <Image src={cover} alt={r.title} fill className="object-cover" sizes="40px" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">

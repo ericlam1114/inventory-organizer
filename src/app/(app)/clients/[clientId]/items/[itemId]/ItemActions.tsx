@@ -6,6 +6,7 @@ import { Move, ChevronDown } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { StatusBadge } from '@/components/StatusBadge';
 import { toast } from '@/lib/toast';
+import { reportError } from '@/lib/friendly-errors';
 
 type Location = { id: string; name: string; parent_location_id: string | null };
 type Status = 'active' | 'donated' | 'archived';
@@ -34,7 +35,7 @@ export function ItemActions({
       p_new_location_id: newLocationId,
       p_note: note || null,
     });
-    if (error) { setError(error.message); toast.error(error.message); setPending(false); return; }
+    if (error) { const msg = reportError(error); setError(msg); toast.error(msg); setPending(false); return; }
     setOpenMove(false); setPending(false);
     toast.success('Item moved');
     router.refresh();
@@ -49,7 +50,7 @@ export function ItemActions({
       p_new_status: newStatus,
       p_note: note || null,
     });
-    if (error) { setError(error.message); toast.error(error.message); setPending(false); return; }
+    if (error) { const msg = reportError(error); setError(msg); toast.error(msg); setPending(false); return; }
     setOpenStatus(false); setPending(false);
     toast.success('Status updated');
     router.refresh();
@@ -115,7 +116,7 @@ function StatusPanel({ current, onSubmit, onCancel, pending, error }: {
       )}
       {error && <p className="text-danger text-[12px]">{error}</p>}
       <div className="flex justify-end gap-2 pt-1">
-        <button type="button" onClick={onCancel} className="text-ink2 hover:text-ink text-[13px] px-2 py-1">Cancel</button>
+        <button type="button" onClick={onCancel} className="text-ink2 hover:text-ink text-[13px] px-3 py-2.5 min-h-[44px]">Cancel</button>
         <button
           type="button"
           onClick={() => onSubmit(newStatus, note)}
@@ -175,7 +176,7 @@ function MovePanel({ current, locations, onSubmit, onCancel, pending, error }: {
       />
       {error && <p className="text-danger text-[12px]">{error}</p>}
       <div className="flex justify-end gap-2 pt-1">
-        <button type="button" onClick={onCancel} className="text-ink2 hover:text-ink text-[13px] px-2 py-1">Cancel</button>
+        <button type="button" onClick={onCancel} className="text-ink2 hover:text-ink text-[13px] px-3 py-2.5 min-h-[44px]">Cancel</button>
         <button
           type="button"
           onClick={() => target && onSubmit(target, note)}

@@ -82,7 +82,7 @@ export default async function ClientHomePage({ params }: { params: Promise<{ cli
     <div className="max-w-5xl mx-auto p-6 lg:p-12 space-y-8">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-[28px] sm:text-[32px] lg:text-[40px] font-medium leading-[1.15]">
+          <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em]">
             {client.name}
           </h1>
           <p className="text-ink3 text-[13px] mt-1">

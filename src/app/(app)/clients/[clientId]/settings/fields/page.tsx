@@ -53,7 +53,7 @@ export default async function FieldsPage({ params }: { params: Promise<{ clientI
       <div className="flex items-center justify-between">
         <div>
           <p className="text-ink3 text-[13px] uppercase tracking-wide">Settings · {client.name}</p>
-          <h1 className="text-[28px] sm:text-[32px] lg:text-[40px] font-medium leading-[1.15] mt-1">Custom fields</h1>
+          <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em] mt-1">Custom fields</h1>
           <p className="text-ink3 text-[13px] mt-1">
             {(fields ?? []).length} field{(fields ?? []).length !== 1 ? 's' : ''} defined for {client.name}
           </p>

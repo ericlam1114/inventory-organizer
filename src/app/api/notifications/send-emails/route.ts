@@ -109,11 +109,11 @@ export async function GET(request: Request) {
       '',
       `To stop email notifications, sign in and toggle them off in your profile.`,
     ].join('\n');
-    const html = `<div style="font-family:Inter,sans-serif;color:#1A1A1A;background:#FAF8F5;padding:24px;">
+    const html = `<div style="font-family:Inter,sans-serif;color:#14385A;background:#FFFFFF;padding:24px;">
       <p style="font-size:15px;line-height:24px;">${escapeHtml(authorName)} just mentioned you in a comment on Janelle's inventory app.</p>
-      <blockquote style="border-left:2px solid #C8B89A;padding:8px 16px;margin:16px 0;color:#4A4A4A;font-size:15px;">${escapeHtml(bodySnippet)}</blockquote>
-      <p><a href="${deepLink}" style="display:inline-block;background:#E8DFCB;color:#1A1A1A;text-decoration:none;padding:10px 16px;border-radius:2px;font-size:13px;font-weight:500;">Open comment →</a></p>
-      <p style="font-size:12px;color:#8A8A8A;margin-top:32px;">To stop email notifications, sign in and toggle them off in your profile.</p>
+      <blockquote style="border-left:2px solid #14385A;padding:8px 16px;margin:16px 0;color:#3E5572;font-size:15px;">${escapeHtml(bodySnippet)}</blockquote>
+      <p><a href="${deepLink}" style="display:inline-block;background:#14385A;color:#FFFFFF;text-decoration:none;padding:10px 16px;border-radius:2px;font-size:13px;font-weight:500;">Open comment →</a></p>
+      <p style="font-size:12px;color:#8A98A8;margin-top:32px;">To stop email notifications, sign in and toggle them off in your profile.</p>
     </div>`;
 
     try {

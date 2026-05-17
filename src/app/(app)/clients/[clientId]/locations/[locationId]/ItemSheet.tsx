@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/lib/toast';
+import { reportError } from '@/lib/friendly-errors';
 import {
   useReactTable,
   getCoreRowModel,
@@ -70,8 +71,9 @@ export function ItemSheet({ clientId, items, fields }: { clientId: string; items
 
     const { error } = await supabase.from('items').update(payload).eq('id', itemId);
     if (error) {
-      setMeta(key, { saving: false, error: error.message });
-      toast.error(error.message);
+      const msg = reportError(error, "Couldn't save that change.");
+      setMeta(key, { saving: false, error: msg });
+      toast.error(msg);
       return;
     }
     setMeta(key, { saving: false, error: null });
@@ -90,7 +92,7 @@ export function ItemSheet({ clientId, items, fields }: { clientId: string; items
             <Link href={`/clients/${clientId}/items/${r.id}`}>
               {r.coverSignedUrl ? (
                 <div className="relative w-10 h-10">
-                  <Image src={r.coverSignedUrl} alt="" fill className="object-cover" sizes="40px" />
+                  <Image src={r.coverSignedUrl} alt={r.title} fill className="object-cover" sizes="40px" />
                 </div>
               ) : (
                 <div className="w-10 h-10 bg-paper" />

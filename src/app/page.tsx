@@ -10,7 +10,7 @@ export default async function HomePage() {
   if (user) redirect('/clients');
 
   return (
-    <main className="relative min-h-screen bg-[#F2E6BC] flex flex-col overflow-hidden">
+    <main className="relative min-h-screen bg-[#F5F5F5] flex flex-col overflow-hidden">
       <div aria-hidden className="cinema-bg">
         <span />
         <span className="b" />

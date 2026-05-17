@@ -133,6 +133,7 @@ export default async function ItemDetailPage({
       <ItemPhotos
         clientId={clientId}
         itemId={itemId}
+        itemTitle={item.title}
         photos={(photos ?? []).map((p) => ({
           id: p.id,
           storagePath: p.storage_path,
@@ -142,7 +143,7 @@ export default async function ItemDetailPage({
       />
 
       <div className="flex items-start justify-between gap-4">
-        <h1 className="text-[28px] sm:text-[32px] lg:text-[40px] font-medium leading-[1.15] flex-1">{item.title}</h1>
+        <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em] flex-1">{item.title}</h1>
         <ItemActions
           itemId={itemId}
           clientId={clientId}

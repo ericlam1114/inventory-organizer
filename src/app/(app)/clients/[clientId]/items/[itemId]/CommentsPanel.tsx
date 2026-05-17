@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { MentionAutocomplete, type MentionUser } from './MentionAutocomplete';
 import { Avatar } from '@/components/Avatar';
 import { toast } from '@/lib/toast';
+import { reportError } from '@/lib/friendly-errors';
 
 type Comment = {
   id: string;
@@ -109,7 +110,7 @@ function CommentItem({
   async function handleSaveEdit(newBody: string) {
     setPending(true); setError(null);
     const { error } = await supabase.rpc('edit_comment', { p_comment_id: c.id, p_new_body: newBody });
-    if (error) { setError(error.message); toast.error(error.message); setPending(false); return; }
+    if (error) { const msg = reportError(error); setError(msg); toast.error(msg); setPending(false); return; }
     setEditing(false); setPending(false);
     toast.success('Comment updated');
     onMutated();
@@ -119,7 +120,7 @@ function CommentItem({
     if (!confirm("Delete this comment? It'll show as 'deleted' in the thread.")) return;
     setPending(true); setError(null);
     const { error } = await supabase.rpc('delete_comment', { p_comment_id: c.id });
-    if (error) { setError(error.message); toast.error(error.message); setPending(false); return; }
+    if (error) { const msg = reportError(error); setError(msg); toast.error(msg); setPending(false); return; }
     setPending(false);
     toast.success('Comment deleted');
     onMutated();
@@ -195,7 +196,7 @@ function EditForm({ initialBody, mentionable, pending, error, onCancel, onSubmit
         <button onClick={() => onSubmit(body)} disabled={pending || !body.trim()} className="bg-ink text-paper px-3 py-1.5 rounded-[2px] text-[13px] hover:bg-ink2 disabled:opacity-60">
           {pending ? 'Saving…' : 'Save'}
         </button>
-        <button onClick={onCancel} className="text-ink2 hover:text-ink text-[13px] px-2 py-1.5">Cancel</button>
+        <button onClick={onCancel} className="text-ink2 hover:text-ink text-[13px] px-3 py-2.5 min-h-[44px]">Cancel</button>
       </div>
     </div>
   );
@@ -217,7 +218,7 @@ function ComposeBox({ itemId, mentionable, onPosted }: {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setError('Not signed in'); toast.error('Not signed in'); setPending(false); return; }
     const { error } = await supabase.from('comments').insert({ item_id: itemId, author_id: user.id, body: body.trim() });
-    if (error) { setError(error.message); toast.error(error.message); setPending(false); return; }
+    if (error) { const msg = reportError(error); setError(msg); toast.error(msg); setPending(false); return; }
     setBody(''); setPending(false);
     toast.success('Comment posted');
     onPosted();

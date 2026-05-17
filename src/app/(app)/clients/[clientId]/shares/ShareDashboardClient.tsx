@@ -49,7 +49,7 @@ export function ShareDashboardClient({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-ink3 text-[13px] uppercase tracking-wide">Settings · {clientName}</p>
-          <h1 className="text-[28px] sm:text-[32px] lg:text-[40px] font-medium leading-[1.15] mt-1">Shares</h1>
+          <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em] mt-1">Shares</h1>
           <p className="text-ink3 text-[13px] mt-1">
             {active.length} active · {inactive.length} expired
           </p>
@@ -152,10 +152,10 @@ function ShareRow({ share: s, kind, pending, onCopy, onRevoke }: {
       </div>
       {kind === 'active' && (
         <div className="flex gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={onCopy} className="inline-flex items-center gap-1 bg-surface border border-rule px-3 py-1.5 rounded-[2px] hover:bg-paper text-[12px]" title="Copy link">
+          <button onClick={onCopy} className="inline-flex items-center gap-1 bg-surface border border-rule px-3 py-2 rounded-[2px] hover:bg-paper text-[12px] min-h-[36px]" title="Copy link">
             <LinkIcon size={12} /> Copy
           </button>
-          <button onClick={onRevoke} disabled={pending} className="bg-surface border border-rule px-3 py-1.5 rounded-[2px] hover:bg-paper text-[12px] text-danger disabled:opacity-50">
+          <button onClick={onRevoke} disabled={pending} className="bg-surface border border-rule px-3 py-2 rounded-[2px] hover:bg-paper text-[12px] text-danger disabled:opacity-50 min-h-[36px]">
             Revoke
           </button>
         </div>

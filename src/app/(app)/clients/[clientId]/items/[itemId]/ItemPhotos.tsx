@@ -8,15 +8,17 @@ import { createClient } from '@/lib/supabase/client';
 import { processPhoto } from '@/lib/photos/process';
 import { uploadItemPhoto } from '@/lib/photos/upload';
 import { toast } from '@/lib/toast';
+import { reportError } from '@/lib/friendly-errors';
 import { PhotoLightbox } from '@/components/PhotoLightbox';
 
 type PhotoInput = { id: string; storagePath: string; signedUrl: string | null };
 
 export function ItemPhotos({
-  clientId, itemId, photos, coverPhotoId,
+  clientId, itemId, itemTitle, photos, coverPhotoId,
 }: {
   clientId: string;
   itemId: string;
+  itemTitle: string;
   photos: PhotoInput[];
   coverPhotoId: string | null;
 }) {
@@ -57,7 +59,7 @@ export function ItemPhotos({
     const { error } = await supabase.from('items').update({ cover_photo_id: photoId }).eq('id', itemId);
     if (error) {
       setError(error.message);
-      toast.error(error.message);
+      toast.error(reportError(error));
     } else {
       toast.success('Cover updated');
       router.refresh();
@@ -73,7 +75,7 @@ export function ItemPhotos({
           onClick={() => setLightboxIndex(0)}
           className="relative w-full aspect-square bg-paper block cursor-zoom-in"
         >
-          <Image src={cover.signedUrl} alt="" fill className="object-contain" sizes="(max-width: 768px) 100vw, 720px" priority />
+          <Image src={cover.signedUrl} alt={itemTitle} fill className="object-contain" sizes="(max-width: 768px) 100vw, 720px" priority />
         </button>
       ) : (
         <div className="w-full aspect-square bg-paper flex items-center justify-center text-ink3 text-[13px]">
@@ -92,7 +94,7 @@ export function ItemPhotos({
                 className="absolute inset-0 cursor-zoom-in"
                 aria-label="View photo"
               />
-              {p.signedUrl && <Image src={p.signedUrl} alt="" fill className="object-cover pointer-events-none" sizes="80px" />}
+              {p.signedUrl && <Image src={p.signedUrl} alt={`${itemTitle} (additional photo)`} fill className="object-cover pointer-events-none" sizes="80px" />}
               {/* Star button for promote-to-cover */}
               <button
                 type="button"

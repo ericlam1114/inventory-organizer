@@ -1,6 +1,8 @@
 'use client';
 
 import { useActionState, useTransition } from 'react';
+import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
 import { updateField, deleteField } from './actions';
 
 type Field = {
@@ -32,8 +34,14 @@ export default function EditFieldForm({
 
   return (
     <div className="w-full max-w-5xl px-6 lg:px-12 py-8 lg:py-12">
+      <Link
+        href={`/clients/${clientId}/settings/fields`}
+        className="inline-flex items-center gap-1 text-ink2 hover:text-ink text-[13px] mb-6"
+      >
+        <ChevronLeft size={14} /> Back to fields
+      </Link>
       <div className="mb-8">
-        <h1 className="text-[28px] sm:text-[32px] lg:text-[40px] font-medium leading-[1.15]">Edit custom field</h1>
+        <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em]">Edit custom field</h1>
       </div>
       <div className="max-w-md bg-surface border border-rule rounded-[4px] p-6 lg:p-8 space-y-8">
         <form action={action} className="space-y-5">

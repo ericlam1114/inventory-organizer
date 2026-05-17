@@ -17,7 +17,7 @@ export default function InviteAdminPage({
   return (
     <div className="w-full max-w-5xl px-6 lg:px-12 py-8 lg:py-12">
       <div className="mb-8">
-        <h1 className="text-[28px] sm:text-[32px] lg:text-[40px] font-medium leading-[1.15]">Invite client admin</h1>
+        <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em]">Invite client admin</h1>
       </div>
       {state.sent ? (
         <p className="text-ink2">Invite sent.</p>

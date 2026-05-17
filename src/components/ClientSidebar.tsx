@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
-import { Compass, Camera, Search, Bell, Folder } from 'lucide-react';
+import { Compass, Camera, Search, Bell, Folder, Share2, Sliders } from 'lucide-react';
 
 type Location = { id: string; name: string; parent_location_id: string | null };
 
@@ -83,10 +83,12 @@ export function ClientSidebar({ clientName, locations, itemCount, needsCount }: 
   const base = `/clients/${clientId}`;
 
   const tabs = [
-    { href: base,                label: 'Browse',        icon: Compass,  active: pathname === base || pathname.startsWith(`${base}/locations`) || pathname.startsWith(`${base}/items`) },
-    { href: `${base}/capture`,   label: 'Capture',       icon: Camera,   active: pathname.startsWith(`${base}/capture`) },
-    { href: `${base}/search`,    label: 'Search',        icon: Search,   active: pathname.startsWith(`${base}/search`) },
-    { href: '/notifications',    label: 'Notifications', icon: Bell,     active: pathname === '/notifications' },
+    { href: base,                          label: 'Browse',        icon: Compass,  active: pathname === base || pathname.startsWith(`${base}/locations`) || pathname.startsWith(`${base}/items`) },
+    { href: `${base}/capture`,             label: 'Capture',       icon: Camera,   active: pathname.startsWith(`${base}/capture`) },
+    { href: `${base}/search`,              label: 'Search',        icon: Search,   active: pathname.startsWith(`${base}/search`) },
+    { href: `${base}/shares`,              label: 'Shares',        icon: Share2,   active: pathname.startsWith(`${base}/shares`) },
+    { href: `${base}/settings/fields`,     label: 'Custom fields', icon: Sliders,  active: pathname.startsWith(`${base}/settings/fields`) },
+    { href: '/notifications',              label: 'Notifications', icon: Bell,     active: pathname === '/notifications' },
   ];
 
   const byParent = buildTree(locations);

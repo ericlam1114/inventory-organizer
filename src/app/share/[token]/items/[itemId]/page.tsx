@@ -107,7 +107,7 @@ export default async function ShareItemPage({
           <div className="relative w-full aspect-square bg-paper">
             <Image
               src={signed.get(cover.storage_path) ?? ''}
-              alt=""
+              alt={item.title}
               fill
               className="object-contain"
               sizes="(max-width: 768px) 100vw, 720px"
@@ -120,7 +120,7 @@ export default async function ShareItemPage({
               <div key={p.id} className="relative shrink-0 w-20 h-20">
                 <Image
                   src={signed.get(p.storage_path) ?? ''}
-                  alt=""
+                  alt={`${item.title} (additional photo)`}
                   fill
                   className="object-cover"
                   sizes="80px"
@@ -131,7 +131,7 @@ export default async function ShareItemPage({
         )}
 
         <div className="flex items-start justify-between gap-4">
-          <h1 className="text-[28px] sm:text-[32px] lg:text-[40px] font-medium leading-[1.15] flex-1">{item.title}</h1>
+          <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em] flex-1">{item.title}</h1>
           <StatusBadge status={item.status as 'active' | 'donated' | 'archived'} />
         </div>
 

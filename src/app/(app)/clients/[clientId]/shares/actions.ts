@@ -102,12 +102,12 @@ async function sendShareInvites(
       ``,
       `You'll be asked to enter this email address (${email}) to view.`,
     ].join('\n');
-    const html = `<div style="font-family:Inter,sans-serif;color:#1A1A1A;background:#FAF8F5;padding:24px;">
+    const html = `<div style="font-family:Inter,sans-serif;color:#14385A;background:#FFFFFF;padding:24px;">
       <p>${escapeHtml(senderName)} shared an inventory subset with you on her organization app.</p>
-      ${note ? `<blockquote style="border-left:2px solid #C8B89A;padding:8px 16px;margin:16px 0;color:#4A4A4A;">${escapeHtml(note)}</blockquote>` : ''}
+      ${note ? `<blockquote style="border-left:2px solid #14385A;padding:8px 16px;margin:16px 0;color:#3E5572;">${escapeHtml(note)}</blockquote>` : ''}
       <p><strong>Subset:</strong> ${escapeHtml(subtreeName)}</p>
-      <p><a href="${shareUrl}" style="display:inline-block;background:#E8DFCB;color:#1A1A1A;text-decoration:none;padding:10px 16px;border-radius:2px;font-weight:500;">Open inventory →</a></p>
-      <p style="font-size:12px;color:#8A8A8A;margin-top:32px;">You'll be asked to enter this email address (${escapeHtml(email)}) to view.</p>
+      <p><a href="${shareUrl}" style="display:inline-block;background:#14385A;color:#FFFFFF;text-decoration:none;padding:10px 16px;border-radius:2px;font-weight:500;">Open inventory →</a></p>
+      <p style="font-size:12px;color:#8A98A8;margin-top:32px;">You'll be asked to enter this email address (${escapeHtml(email)}) to view.</p>
     </div>`;
     await resend.emails.send({ from: resendFrom, to: email, subject, text, html });
   }));
