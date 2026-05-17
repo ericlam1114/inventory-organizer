@@ -20,7 +20,7 @@ export function ShareItemsGrid({ token, items }: { token: string; items: Item[] 
       {items.map((item) => (
         <li key={item.id}>
           <Link href={`/share/${token}/items/${item.id}`} className="block group">
-            <div className="relative w-full aspect-square bg-paper group-hover:bg-[#F2EEE7]">
+            <div className="relative w-full aspect-square bg-paper group-hover:bg-rule">
               {item.coverSignedUrl ? (
                 <Image src={item.coverSignedUrl} alt={item.title} fill className="object-cover" sizes="(max-width: 640px) 50vw, 25vw" />
               ) : (

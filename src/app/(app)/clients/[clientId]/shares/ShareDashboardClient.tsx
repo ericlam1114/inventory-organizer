@@ -49,7 +49,7 @@ export function ShareDashboardClient({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-ink3 text-[13px] uppercase tracking-wide">Settings · {clientName}</p>
-          <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2] mt-1">Shares</h1>
+          <h1 className="text-[28px] sm:text-[32px] lg:text-[40px] font-medium leading-[1.15] mt-1">Shares</h1>
           <p className="text-ink3 text-[13px] mt-1">
             {active.length} active · {inactive.length} expired
           </p>

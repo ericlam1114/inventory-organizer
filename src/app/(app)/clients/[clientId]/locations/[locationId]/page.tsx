@@ -87,7 +87,7 @@ export default async function LocationPage({
 
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">
+          <h1 className="text-[28px] sm:text-[32px] lg:text-[40px] font-medium leading-[1.15]">
             {location.name}
           </h1>
           <p className="text-ink3 text-[13px] mt-1">

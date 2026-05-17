@@ -138,7 +138,7 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
         note={share.note}
       />
       <div className="flex-1 p-6 lg:p-12 max-w-5xl mx-auto w-full space-y-6">
-        <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">{root?.name ?? 'Inventory'}</h1>
+        <h1 className="text-[28px] sm:text-[32px] lg:text-[40px] font-medium leading-[1.15]">{root?.name ?? 'Inventory'}</h1>
         <ShareItemsGrid
           token={token}
           items={(items ?? []).map((i) => ({

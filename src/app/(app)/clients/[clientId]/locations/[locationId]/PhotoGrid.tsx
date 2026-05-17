@@ -22,7 +22,7 @@ export function PhotoGrid({ clientId, items }: { clientId: string; items: Item[]
             href={`/clients/${clientId}/items/${item.id}`}
             className="block group"
           >
-            <div className="relative w-full aspect-square bg-paper group-hover:bg-[#F2EEE7]">
+            <div className="relative w-full aspect-square bg-paper group-hover:bg-rule">
               {item.coverSignedUrl ? (
                 <Image
                   src={item.coverSignedUrl}

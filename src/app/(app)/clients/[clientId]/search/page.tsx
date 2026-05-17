@@ -90,7 +90,7 @@ export default async function SearchPage({
       </Link>
 
       <div>
-        <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">Search</h1>
+        <h1 className="text-[28px] sm:text-[32px] lg:text-[40px] font-medium leading-[1.15]">Search</h1>
         <p className="text-ink3 text-[13px] mt-1">
           {q ? `${results.length} result${results.length !== 1 ? 's' : ''}` : `Across ${clientName}`}
         </p>
