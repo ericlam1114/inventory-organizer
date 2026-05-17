@@ -30,7 +30,12 @@ export default async function ClientsPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">Clients</h1>
+        <div>
+          <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">Clients</h1>
+          <p className="text-ink3 text-[13px] mt-1">
+            {(clients ?? []).length} client{(clients ?? []).length !== 1 ? 's' : ''}
+          </p>
+        </div>
         {isSuperAdmin && (
           <Link
             href="/clients/new"
@@ -47,14 +52,14 @@ export default async function ClientsPage() {
           <p className="text-ink3">You have no access. Ask Janelle for an invite.</p>
         )
       ) : (
-        <ul className="space-y-3">
+        <ul className="divide-y divide-rule rounded-[4px] border border-rule bg-surface">
           {clients?.map((c) => (
-            <li key={c.id}>
+            <li key={c.id} className="group">
               <Link
                 href={`/clients/${c.id}`}
-                className="block bg-surface border border-rule rounded-[4px] p-6 hover:bg-paper"
+                className="flex items-center gap-3 px-4 py-3 hover:bg-paper min-h-[48px]"
               >
-                <span className="text-[18px] font-medium">{c.name}</span>
+                <span className="text-[15px] font-medium flex-1">{c.name}</span>
               </Link>
             </li>
           ))}

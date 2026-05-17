@@ -50,6 +50,9 @@ export function ShareDashboardClient({
         <div>
           <p className="text-ink3 text-[13px] uppercase tracking-wide">Settings · {clientName}</p>
           <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2] mt-1">Shares</h1>
+          <p className="text-ink3 text-[13px] mt-1">
+            {active.length} active · {inactive.length} expired
+          </p>
         </div>
         <button
           type="button"
@@ -90,7 +93,7 @@ export function ShareDashboardClient({
             </button>
           </div>
         ) : (
-          <ul className="space-y-3">
+          <ul className="divide-y divide-rule rounded-[4px] border border-rule bg-surface">
             {active.map((s) => (
               <ShareRow key={s.id}
                 share={s}
@@ -114,7 +117,7 @@ export function ShareDashboardClient({
           Expired / Revoked ({inactive.length}) {expanded ? '▾' : '▸'}
         </button>
         {expanded && inactive.length > 0 && (
-          <ul className="space-y-3 mt-3">
+          <ul className="divide-y divide-rule rounded-[4px] border border-rule bg-surface mt-3">
             {inactive.map((s) => (
               <ShareRow key={s.id} share={s} kind="inactive" pending={pending} />
             ))}
@@ -134,32 +137,29 @@ function ShareRow({ share: s, kind, pending, onCopy, onRevoke }: {
 }) {
   const totalViews = s.recipients.reduce((a, r) => a + r.viewCount, 0);
   return (
-    <li className="bg-surface border border-rule rounded-[4px] p-4 space-y-2">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[14px] font-medium">{s.locationName}</p>
-          <p className="text-ink3 text-[12px] truncate">Recipients: {s.recipients.map((r) => r.email).join(', ') || '(none)'}</p>
-          {kind === 'active' ? (
-            <p className="text-ink3 text-[12px] mt-1">
-              Expires {new Date(s.expiresAt).toLocaleDateString()} · Viewed {totalViews}× {totalViews > 0 ? `(last: ${s.recipients.find((r) => r.lastViewed)?.lastViewed ? new Date(s.recipients.find((r) => r.lastViewed)!.lastViewed!).toLocaleDateString() : '-'})` : ''}
-            </p>
-          ) : (
-            <p className="text-ink3 text-[12px] mt-1">
-              {(s as InactiveShare).revokedAt ? `Revoked ${new Date((s as InactiveShare).revokedAt!).toLocaleDateString()}` : `Expired ${new Date(s.expiresAt).toLocaleDateString()}`}
-            </p>
-          )}
-        </div>
-        {kind === 'active' && (
-          <div className="flex gap-2 shrink-0">
-            <button onClick={onCopy} className="inline-flex items-center gap-1 bg-surface border border-rule px-3 py-1.5 rounded-[2px] hover:bg-paper text-[12px]" title="Copy link">
-              <LinkIcon size={12} /> Copy
-            </button>
-            <button onClick={onRevoke} disabled={pending} className="bg-surface border border-rule px-3 py-1.5 rounded-[2px] hover:bg-paper text-[12px] text-danger disabled:opacity-50">
-              Revoke
-            </button>
-          </div>
-        )}
+    <li className="group px-4 py-3 hover:bg-paper flex items-center gap-3 min-h-[48px]">
+      <div className="min-w-0 flex-1">
+        <p className="text-[14px] font-medium">{s.locationName}</p>
+        <p className="text-ink3 text-[12px] truncate">
+          {s.recipients.map((r) => r.email).join(', ') || '(none)'}
+          {' · '}
+          {kind === 'active'
+            ? `Expires ${new Date(s.expiresAt).toLocaleDateString()} · Viewed ${totalViews}×`
+            : ((s as InactiveShare).revokedAt
+                ? `Revoked ${new Date((s as InactiveShare).revokedAt!).toLocaleDateString()}`
+                : `Expired ${new Date(s.expiresAt).toLocaleDateString()}`)}
+        </p>
       </div>
+      {kind === 'active' && (
+        <div className="flex gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onClick={onCopy} className="inline-flex items-center gap-1 bg-surface border border-rule px-3 py-1.5 rounded-[2px] hover:bg-paper text-[12px]" title="Copy link">
+            <LinkIcon size={12} /> Copy
+          </button>
+          <button onClick={onRevoke} disabled={pending} className="bg-surface border border-rule px-3 py-1.5 rounded-[2px] hover:bg-paper text-[12px] text-danger disabled:opacity-50">
+            Revoke
+          </button>
+        </div>
+      )}
     </li>
   );
 }

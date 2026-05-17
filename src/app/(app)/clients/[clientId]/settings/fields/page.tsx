@@ -54,6 +54,9 @@ export default async function FieldsPage({ params }: { params: Promise<{ clientI
         <div>
           <p className="text-ink3 text-[13px] uppercase tracking-wide">Settings · {client.name}</p>
           <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2] mt-1">Custom fields</h1>
+          <p className="text-ink3 text-[13px] mt-1">
+            {(fields ?? []).length} field{(fields ?? []).length !== 1 ? 's' : ''} defined for {client.name}
+          </p>
         </div>
         <Link
           href={`/clients/${clientId}/settings/fields/new`}
@@ -80,17 +83,17 @@ export default async function FieldsPage({ params }: { params: Promise<{ clientI
           </Link>
         </div>
       ) : (
-        <ul className="space-y-3">
+        <ul className="divide-y divide-rule rounded-[4px] border border-rule bg-surface">
           {fields.map((f) => (
-            <li key={f.id} className="bg-surface border border-rule rounded-[4px] p-4 flex items-center justify-between gap-4">
-              <div className="min-w-0">
-                <p className="text-[15px] font-medium">{f.name}</p>
+            <li key={f.id} className="group flex items-center gap-3 px-4 py-3 hover:bg-paper min-h-[48px]">
+              <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-medium">{f.name}</p>
                 <p className="text-ink3 text-[12px]">key: <code>{f.key}</code> · {f.type}{f.required ? ' · required' : ''}</p>
               </div>
-              <div className="flex gap-2 shrink-0">
+              <div className="flex gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Link
                   href={`/clients/${clientId}/settings/fields/${f.id}`}
-                  className="bg-surface border border-rule text-ink px-3 py-2 rounded-[2px] hover:bg-paper text-[13px]"
+                  className="bg-surface border border-rule text-ink px-3 py-1.5 rounded-[2px] hover:bg-paper text-[13px]"
                 >
                   Edit
                 </Link>

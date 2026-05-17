@@ -122,7 +122,10 @@ export default function CapturePage({ params }: { params: Promise<{ clientId: st
 
   return (
     <div className="max-w-md mx-auto p-6 space-y-6">
-      <h1 className="text-[24px] font-medium leading-[32px]">Capture</h1>
+      <div>
+        <h1 className="text-[24px] font-medium leading-[32px]">Capture</h1>
+        <p className="text-ink3 text-[13px] mt-1">Add a new item to your inventory</p>
+      </div>
 
       {/* Staged photos strip */}
       {staged.length > 0 && (

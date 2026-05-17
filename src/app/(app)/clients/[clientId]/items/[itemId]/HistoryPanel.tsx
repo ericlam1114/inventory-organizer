@@ -59,7 +59,7 @@ export function HistoryPanel({
       {entries.length === 0 ? (
         <p className="text-ink3 text-[13px]">No history yet.</p>
       ) : (
-        <ul className="space-y-4">
+        <ul className="space-y-3">
           {entries.map((e) => {
             const display = describeAction(e.action, e.before, e.after, locationNameById);
             const actorName = e.actor

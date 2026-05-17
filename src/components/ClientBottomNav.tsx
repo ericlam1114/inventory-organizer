@@ -10,14 +10,32 @@ export function ClientBottomNav() {
   const base = `/clients/${params.clientId}`;
 
   const tabs = [
-    { href: base,                  label: 'Browse',  icon: Compass, active: pathname === base || pathname.startsWith(`${base}/locations`) || pathname.startsWith(`${base}/items`) },
-    { href: `${base}/capture`,     label: 'Capture', icon: Camera,  active: pathname.startsWith(`${base}/capture`), primary: true },
-    { href: `${base}/search`,      label: 'Search',  icon: Search,  active: pathname.startsWith(`${base}/search`) },
+    {
+      href: base,
+      label: 'Browse',
+      icon: Compass,
+      active: pathname === base || pathname.startsWith(`${base}/locations`) || pathname.startsWith(`${base}/items`),
+      primary: false,
+    },
+    {
+      href: `${base}/capture`,
+      label: 'Capture',
+      icon: Camera,
+      active: pathname.startsWith(`${base}/capture`),
+      primary: true,
+    },
+    {
+      href: `${base}/search`,
+      label: 'Search',
+      icon: Search,
+      active: pathname.startsWith(`${base}/search`),
+      primary: false,
+    },
   ];
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-surface border-t border-rule flex items-center justify-around px-4 pt-2 pb-3 z-40"
+      className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-rule flex items-center justify-around px-4 pt-2 pb-3 z-40"
       style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
     >
       {tabs.map(({ href, label, icon: Icon, active, primary }) => (
@@ -31,7 +49,9 @@ export function ClientBottomNav() {
               <Icon size={20} />
             </span>
           ) : (
-            <Icon size={24} />
+            <span className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-full transition-colors ${active ? 'bg-sand2 text-ink' : 'text-ink2'}`}>
+              <Icon size={22} />
+            </span>
           )}
           <span>{label}</span>
         </Link>

@@ -69,7 +69,7 @@ export function CommentsPanel({
       {comments.length === 0 ? (
         <p className="text-ink3 text-[13px]">No comments yet. Be the first to ping someone @ this item.</p>
       ) : (
-        <ul className="space-y-5">
+        <ul className="space-y-4">
           {comments.map((c) => (
             <CommentItem
               key={c.id}

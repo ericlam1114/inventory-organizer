@@ -23,6 +23,14 @@ export default async function SearchPage({
 
   const supabase = await createClient();
 
+  // Fetch client name for subtitle
+  const { data: clientRow } = await supabase
+    .from('clients')
+    .select('name')
+    .eq('id', clientId)
+    .maybeSingle();
+  const clientName = clientRow?.name ?? '';
+
   // Fetch locations for this client first so we can filter items by their location_id
   const { data: locations } = await supabase
     .from('locations')
@@ -81,7 +89,12 @@ export default async function SearchPage({
         <ChevronLeft size={14} /> Back
       </Link>
 
-      <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">Search</h1>
+      <div>
+        <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">Search</h1>
+        <p className="text-ink3 text-[13px] mt-1">
+          {q ? `${results.length} result${results.length !== 1 ? 's' : ''}` : `Across ${clientName}`}
+        </p>
+      </div>
 
       <form className="flex gap-2" action="" method="get">
         <input
@@ -138,32 +151,30 @@ export default async function SearchPage({
           </p>
         </div>
       ) : (
-        <ul className="space-y-3">
+        <ul className="divide-y divide-rule rounded-[4px] border border-rule bg-surface">
           {results.map((r) => {
             const cover = r.cover_photo_id
               ? (signedByPath.get(pathByItemId.get(r.id) ?? '') ?? null)
               : null;
             return (
-              <li key={r.id}>
+              <li key={r.id} className="group">
                 <Link
                   href={`/clients/${clientId}/items/${r.id}`}
-                  className="block bg-surface border border-rule rounded-[4px] p-3 hover:bg-paper"
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-paper min-h-[48px]"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="relative w-14 h-14 bg-paper shrink-0">
-                      {cover && (
-                        <Image src={cover} alt="" fill className="object-cover" sizes="56px" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[15px] font-medium truncate">{r.title}</p>
-                      <p className="text-ink3 text-[12px] truncate">
-                        {locationNameById.get(r.location_id) ?? 'Unknown location'}
-                        {r.description ? ` · ${r.description}` : ''}
-                      </p>
-                    </div>
-                    <StatusBadge status={r.status} />
+                  <div className="relative w-10 h-10 bg-paper shrink-0">
+                    {cover && (
+                      <Image src={cover} alt="" fill className="object-cover" sizes="40px" />
+                    )}
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-medium truncate">{r.title}</p>
+                    <p className="text-ink3 text-[12px] truncate">
+                      {locationNameById.get(r.location_id) ?? 'Unknown location'}
+                      {r.description ? ` · ${r.description}` : ''}
+                    </p>
+                  </div>
+                  <StatusBadge status={r.status} />
                 </Link>
               </li>
             );
@@ -178,8 +189,8 @@ function ChipLink({ href, active, label }: { href: string; active: boolean; labe
   return (
     <Link
       href={href}
-      className={`inline-block px-3 py-1 rounded-full text-[12px] uppercase tracking-wide ${
-        active ? 'bg-ink text-paper' : 'bg-sand2 text-ink2 hover:text-ink'
+      className={`inline-block px-3 py-1 rounded-full text-[12px] uppercase tracking-wide transition-colors ${
+        active ? 'bg-sand2 text-ink font-medium' : 'bg-surface border border-rule text-ink2 hover:bg-sand2/60 hover:text-ink'
       }`}
     >
       {label}

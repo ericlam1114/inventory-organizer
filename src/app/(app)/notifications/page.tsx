@@ -46,7 +46,12 @@ export default async function NotificationsPage({
 
   return (
     <div className="max-w-3xl mx-auto p-8 lg:p-12 space-y-6">
-      <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">Notifications</h1>
+      <div>
+        <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">Notifications</h1>
+        <p className="text-ink3 text-[13px] mt-1">
+          {(notifs ?? []).filter((n) => !n.read_at).length} unread
+        </p>
+      </div>
       <div className="flex gap-2">
         <Link
           href="/notifications"
@@ -73,7 +78,7 @@ export default async function NotificationsPage({
           </p>
         </div>
       ) : (
-        <ul className="space-y-2">
+        <ul className="divide-y divide-rule rounded-[4px] border border-rule bg-surface">
           {notifs.map((n) => {
             const c = cBy.get(n.source_comment_id);
             const i = iBy.get(n.source_item_id);
@@ -81,19 +86,17 @@ export default async function NotificationsPage({
             const authorName = author?.display_name ?? 'Someone';
             const bodyText = c?.body ? c.body.replace(/@\[([^\]]+)\]\([0-9a-f-]{36}\)/g, '@$1') : '';
             return (
-              <li key={n.id}>
+              <li key={n.id} className="group">
                 <Link
                   href={`/clients/${n.client_id}/items/${n.source_item_id}#comment-${n.source_comment_id}`}
-                  className="block bg-surface border border-rule rounded-[4px] p-4 hover:bg-paper"
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-paper min-h-[48px]"
                 >
-                  <div className="flex items-start gap-3">
-                    {!n.read_at && <span className="w-2 h-2 rounded-full bg-info mt-1.5 shrink-0" />}
-                    <Avatar name={authorName} size={32} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[14px]"><span className="font-medium">{authorName}</span> mentioned you on &ldquo;{i?.title ?? 'an item'}&rdquo;</p>
-                      {bodyText && <p className="text-ink3 text-[12px] truncate mt-1">— {bodyText}</p>}
-                      <p className="text-ink3 text-[11px] mt-1">{new Date(n.created_at).toLocaleString()}</p>
-                    </div>
+                  {!n.read_at && <span className="w-2 h-2 rounded-full bg-info shrink-0" />}
+                  <Avatar name={authorName} size={32} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14px]"><span className="font-medium">{authorName}</span> mentioned you on &ldquo;{i?.title ?? 'an item'}&rdquo;</p>
+                    {bodyText && <p className="text-ink3 text-[12px] truncate mt-0.5">— {bodyText}</p>}
+                    <p className="text-ink3 text-[11px] mt-0.5">{new Date(n.created_at).toLocaleString()}</p>
                   </div>
                 </Link>
               </li>
