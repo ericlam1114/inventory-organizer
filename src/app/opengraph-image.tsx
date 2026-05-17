@@ -14,7 +14,7 @@ async function loadFont(family: string, weight: number, italic = false) {
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
     },
   }).then((r) => r.text());
-  const match = css.match(/src: url\((.+?)\) format\(['"]?(opentype|truetype)['"]?\)/);
+  const match = css.match(/src:\s*url\((.+?)\)\s*format\(['"]?[a-zA-Z0-9-]+['"]?\)/);
   if (!match) throw new Error(`Could not extract font url for ${family}`);
   return fetch(match[1]).then((r) => r.arrayBuffer());
 }
