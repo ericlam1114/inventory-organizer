@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'nodejs';
-export const alt = 'Inventory by Straighten Up';
+export const alt = 'Archive by Straighten Up';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -78,7 +78,7 @@ export default async function OpengraphImage() {
             <polyline points="3.29 7 12 12 20.71 7" />
             <path d="m7.5 4.27 9 5.15" />
           </svg>
-          <span>Straighten Up · Inventory</span>
+          <span>Straighten Up · Archive</span>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
@@ -95,7 +95,7 @@ export default async function OpengraphImage() {
               flexDirection: 'column',
             }}
           >
-            <span>Inventory by</span>
+            <span>Archive by</span>
             <span style={{ fontStyle: 'italic' }}>Straighten Up.</span>
           </h1>
           <p

@@ -14,7 +14,7 @@ const siteUrl =
   process.env.NEXT_PUBLIC_APP_URL ??
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
-const title = 'Inventory by Straighten Up';
+const title = 'Archive by Straighten Up';
 const description =
   'A private workspace to catalog, track, and share archived wardrobes, furniture, and personal collections.';
 
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   description,
   openGraph: {
     type: 'website',
-    siteName: 'Inventory by Straighten Up',
+    siteName: 'Archive by Straighten Up',
     title,
     description,
     url: '/',

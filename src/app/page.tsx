@@ -20,7 +20,7 @@ export default async function HomePage() {
         <div className="relative max-w-xl text-center space-y-8">
           <p className="text-ink3 text-[11px] uppercase tracking-[0.32em]">Invite only</p>
           <h1 className="font-display text-[56px] lg:text-[88px] font-medium leading-[1.02] tracking-[-0.015em] text-ink">
-            Inventory by
+            Archive by
             <br />
             <span className="italic">Straighten Up.</span>
           </h1>
