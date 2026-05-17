@@ -45,10 +45,10 @@ export default async function NotificationsPage({
   const pBy = new Map((profiles ?? []).map((p) => [p.id, p] as const));
 
   return (
-    <div className="max-w-3xl mx-auto p-8 lg:p-12 space-y-6">
+    <div className="w-full max-w-5xl px-6 lg:px-12 py-8 lg:py-12 space-y-6">
       <div>
-        <h1 className="text-[24px] sm:text-[28px] lg:text-[32px] font-medium leading-[1.2]">Notifications</h1>
-        <p className="text-ink3 text-[13px] mt-1">
+        <h1 className="text-[28px] sm:text-[32px] lg:text-[40px] font-medium leading-[1.15]">Notifications</h1>
+        <p className="text-ink3 text-[14px] mt-1">
           {(notifs ?? []).filter((n) => !n.read_at).length} unread
         </p>
       </div>

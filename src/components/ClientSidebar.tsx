@@ -101,12 +101,12 @@ export function ClientSidebar({ clientName, locations, itemCount, needsCount }: 
         </p>
 
         {/* Primary nav */}
-        <nav className="flex flex-col gap-0.5 mb-4">
+        <nav className="flex flex-col gap-1 mb-4">
           {tabs.map(({ href, label, icon: Icon, active }) => (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-full text-[14px] transition-colors ${
+              className={`flex items-center gap-3 px-3 py-3 rounded-full text-[14px] transition-colors ${
                 active
                   ? 'bg-sand2 text-ink font-medium'
                   : 'text-ink2 hover:bg-sand2/60 hover:text-ink'
