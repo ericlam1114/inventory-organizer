@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Plus, Star } from 'lucide-react';
+import { Camera, Plus, Star } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { processPhoto } from '@/lib/photos/process';
 import { uploadItemPhoto } from '@/lib/photos/upload';
@@ -110,19 +110,32 @@ export function ItemPhotos({
         </div>
       )}
 
-      <label className="block">
+      <div>
         <input
-          type="file" accept="image/*,.heic,.heif" multiple capture="environment"
-          onChange={(e) => handleAdd(e.target.files)} className="hidden" id="add-photo-input"
+          type="file" accept="image/*,.heic,.heif" capture="environment"
+          onChange={(e) => handleAdd(e.target.files)} className="hidden" id="add-camera-input"
           disabled={busy}
         />
-        <label
-          htmlFor="add-photo-input"
-          className="inline-flex items-center gap-2 bg-surface border border-rule rounded-[2px] px-4 py-2 cursor-pointer hover:bg-paper text-[13px] font-medium"
-        >
-          <Plus size={14} /> Add photo
-        </label>
-      </label>
+        <input
+          type="file" accept="image/*,.heic,.heif" multiple
+          onChange={(e) => handleAdd(e.target.files)} className="hidden" id="add-library-input"
+          disabled={busy}
+        />
+        <div className="flex flex-wrap gap-2">
+          <label
+            htmlFor="add-camera-input"
+            className="inline-flex items-center gap-2 bg-surface border border-rule rounded-[2px] px-4 py-2 cursor-pointer hover:bg-paper text-[13px] font-medium"
+          >
+            <Camera size={14} /> Take photo
+          </label>
+          <label
+            htmlFor="add-library-input"
+            className="inline-flex items-center gap-2 bg-surface border border-rule rounded-[2px] px-4 py-2 cursor-pointer hover:bg-paper text-[13px] font-medium"
+          >
+            <Plus size={14} /> Choose photos
+          </label>
+        </div>
+      </div>
       {busy && <p className="text-ink3 text-[12px]">Working…</p>}
       {error && <p className="text-danger text-[12px]">{error}</p>}
 

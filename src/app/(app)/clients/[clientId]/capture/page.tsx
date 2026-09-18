@@ -153,27 +153,43 @@ export default function CapturePage({ params }: { params: Promise<{ clientId: st
         </div>
       )}
 
-      <label className="block">
-        <span className="sr-only">Add photos</span>
+      <div>
+        <input
+          type="file"
+          accept="image/*,.heic,.heif"
+          capture="environment"
+          onChange={(e) => handleFiles(e.target.files)}
+          className="hidden"
+          id="camera-input"
+          disabled={processing || saving}
+        />
         <input
           type="file"
           accept="image/*,.heic,.heif"
           multiple
-          capture="environment"
           onChange={(e) => handleFiles(e.target.files)}
           className="hidden"
-          id="photo-input"
+          id="photo-library-input"
           disabled={processing || saving}
         />
-        <label
-          htmlFor="photo-input"
-          className="flex items-center justify-center gap-2 bg-surface border border-rule rounded-[2px] py-3 cursor-pointer hover:bg-paper"
-        >
-          {staged.length === 0 ? <Camera size={18} /> : <Plus size={18} />}
-          <span className="text-[14px]">{staged.length === 0 ? 'Take or choose photos' : 'Add another photo'}</span>
-        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <label
+            htmlFor="camera-input"
+            className="flex items-center justify-center gap-2 bg-surface border border-rule rounded-[2px] py-3 cursor-pointer hover:bg-paper"
+          >
+            <Camera size={18} />
+            <span className="text-[14px]">Take photo</span>
+          </label>
+          <label
+            htmlFor="photo-library-input"
+            className="flex items-center justify-center gap-2 bg-surface border border-rule rounded-[2px] py-3 cursor-pointer hover:bg-paper"
+          >
+            <Plus size={18} />
+            <span className="text-[14px]">Choose photos</span>
+          </label>
+        </div>
         {processing && <p className="text-ink3 text-[12px] mt-2 text-center">Processing…</p>}
-      </label>
+      </div>
 
       <div>
         <label htmlFor="title" className="block text-[13px] font-medium mb-2">Title *</label>
