@@ -230,7 +230,7 @@ Minimal content (no item titles, no metadata, no client name beyond subtree labe
 ## Rate-limiting the email gate
 
 - 5 failed attempts from one IP for one token → 15-minute lockout
-- Tracked in `share_auth_attempts`; pruned daily by a separate Vercel cron `{ path: '/api/shares/prune-auth-attempts', schedule: '0 3 * * *' }` (runs at 03:00 UTC). Slice 04's cron is `*/2 * * * *` for notification emails — different schedule, different handler.
+- Tracked in `share_auth_attempts`; pruned daily by a separate Vercel cron `{ path: '/api/shares/prune-auth-attempts', schedule: '0 3 * * *' }` (runs at 03:00 UTC). Slice 04's cron is `0 16 * * *` for notification emails — different schedule, different handler.
 - Lockout message: "Too many attempts. Try again in 15 minutes." — doesn't reveal valid emails
 
 ## View counting

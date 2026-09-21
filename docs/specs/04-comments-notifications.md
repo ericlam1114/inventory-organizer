@@ -271,7 +271,7 @@ One subscription per logged-in session.
 
 ```ts
 crons: [
-  { path: '/api/notifications/send-emails', schedule: '*/2 * * * *' }
+  { path: '/api/notifications/send-emails', schedule: '0 16 * * *' }
 ]
 ```
 

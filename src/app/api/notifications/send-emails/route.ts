@@ -29,9 +29,10 @@ export async function GET(request: Request) {
   const admin = createAdminClient();
 
   // Find candidates: unread, unsent, > 10 min old, recipient has email notifications enabled
-  // Window: only look back 24 hours to avoid massive backfill if cron was down
+  // Use a 48-hour window so a daily cron cannot miss notifications when its
+  // execution time varies. email_sent_at prevents duplicate sends.
   const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
 
   const { data: candidates, error } = await admin
     .from('notifications')
@@ -39,7 +40,7 @@ export async function GET(request: Request) {
     .is('read_at', null)
     .is('email_sent_at', null)
     .lt('created_at', tenMinAgo)
-    .gt('created_at', oneDayAgo)
+    .gt('created_at', twoDaysAgo)
     .limit(50);
 
   if (error) {
