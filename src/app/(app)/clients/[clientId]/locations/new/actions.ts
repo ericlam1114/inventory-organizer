@@ -14,6 +14,15 @@ export async function createLocationAction(
   if (!name) return { error: 'Name is required' };
 
   const supabase = await createClient();
+  if (parentLocationId) {
+    const { data: parent } = await supabase.from('locations')
+      .select('id')
+      .eq('id', parentLocationId)
+      .eq('client_id', clientId)
+      .is('deleted_at', null)
+      .maybeSingle();
+    if (!parent) return { error: 'Choose an active parent location.' };
+  }
   const { data, error } = await supabase
     .from('locations')
     .insert({ client_id: clientId, name, parent_location_id: parentLocationId })

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getSignedPhotoUrlsServer } from '@/lib/photos/public-url.server';
@@ -17,6 +17,7 @@ export default async function ClientHomePage({ params }: { params: Promise<{ cli
     .from('locations')
     .select('id, name, parent_location_id')
     .eq('client_id', clientId)
+    .is('deleted_at', null)
     .order('name');
 
   const locationIds = (locations ?? []).map((l) => l.id);
@@ -80,7 +81,7 @@ export default async function ClientHomePage({ params }: { params: Promise<{ cli
 
   return (
     <div className="max-w-5xl mx-auto p-6 lg:p-12 space-y-8">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em]">
             {client.name}
@@ -90,12 +91,17 @@ export default async function ClientHomePage({ params }: { params: Promise<{ cli
             · {totalItems} item{totalItems !== 1 ? 's' : ''}
           </p>
         </div>
-        <Link
-          href={`/clients/${clientId}/locations/new`}
-          className="inline-flex items-center gap-2 bg-ink text-paper px-4 py-2.5 rounded-[2px] hover:bg-ink2 text-[13px] font-medium shrink-0"
-        >
-          <Plus size={14} /> New location
-        </Link>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <Link href={`/clients/${clientId}/locations/trash`} className="inline-flex items-center gap-2 bg-surface border border-rule text-ink px-3 py-2.5 rounded-[2px] hover:bg-paper text-[13px]">
+            <Trash2 size={14} /> Trash
+          </Link>
+          <Link
+            href={`/clients/${clientId}/locations/new`}
+            className="inline-flex items-center gap-2 bg-ink text-paper px-4 py-2.5 rounded-[2px] hover:bg-ink2 text-[13px] font-medium"
+          >
+            <Plus size={14} /> New location
+          </Link>
+        </div>
       </div>
 
       {(locations ?? []).length === 0 ? (

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getSignedPhotoUrlsServer } from '@/lib/photos/public-url.server';
 import { LocationItemsView } from './LocationItemsView';
+import { DeleteLocationButton } from './DeleteLocationButton';
 import { groupItemsByTime } from '@/components/TimeGroupedItems';
 
 export default async function LocationPage({
@@ -23,6 +24,8 @@ export default async function LocationPage({
     .from('locations')
     .select('id, name, parent_location_id')
     .eq('id', locationId)
+    .eq('client_id', clientId)
+    .is('deleted_at', null)
     .maybeSingle();
   if (!location) notFound();
 
@@ -30,6 +33,7 @@ export default async function LocationPage({
     .from('locations')
     .select('id, name')
     .eq('parent_location_id', locationId)
+    .is('deleted_at', null)
     .order('name');
 
   const { data: fields } = await supabase
@@ -47,7 +51,7 @@ export default async function LocationPage({
 
   // Pre-sign cover photos
   const coverIds = (items ?? []).map((i) => i.cover_photo_id).filter(Boolean) as string[];
-  let coverPathByItemId = new Map<string, string>();
+  const coverPathByItemId = new Map<string, string>();
   let signedByPath = new Map<string, string>();
   if (coverIds.length > 0) {
     const { data: coverRows } = await supabase
@@ -97,7 +101,7 @@ export default async function LocationPage({
             )}
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Link
             href={`/clients/${clientId}/shares`}
             className="inline-flex items-center gap-2 bg-surface border border-rule text-ink px-3 py-2 rounded-[2px] hover:bg-paper text-[13px]"
@@ -110,6 +114,7 @@ export default async function LocationPage({
           >
             <Plus size={14} /> Sub-location
           </Link>
+          <DeleteLocationButton clientId={clientId} locationId={locationId} name={location.name} />
         </div>
       </div>
 

@@ -40,6 +40,7 @@ export default async function SharesPage({ params }: { params: Promise<{ clientI
     .from('locations')
     .select('id, name, parent_location_id')
     .eq('client_id', clientId)
+    .is('deleted_at', null)
     .order('name');
 
   const now = Date.now();

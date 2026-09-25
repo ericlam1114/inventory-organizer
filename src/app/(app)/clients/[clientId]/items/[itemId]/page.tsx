@@ -28,7 +28,10 @@ export default async function ItemDetailPage({
     .from('locations')
     .select('id, name')
     .eq('id', item.location_id)
+    .eq('client_id', clientId)
+    .is('deleted_at', null)
     .maybeSingle();
+  if (!location) notFound();
 
   const { data: photos } = await supabase
     .from('item_photos')
@@ -46,6 +49,7 @@ export default async function ItemDetailPage({
     .from('locations')
     .select('id, name, parent_location_id')
     .eq('client_id', clientId)
+    .is('deleted_at', null)
     .order('name');
 
   const { data: history } = await supabase

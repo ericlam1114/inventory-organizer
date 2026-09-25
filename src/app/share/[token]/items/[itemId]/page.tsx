@@ -42,7 +42,10 @@ export default async function ShareItemPage({
   const { data: allLocs } = await admin
     .from('locations')
     .select('id, parent_location_id')
-    .eq('client_id', share.client_id);
+    .eq('client_id', share.client_id)
+    .is('deleted_at', null);
+  const activeLocationIds = new Set((allLocs ?? []).map((location) => location.id));
+  if (!activeLocationIds.has(share.root_location_id) || !activeLocationIds.has(item.location_id)) notFound();
   const inSubtree = (locId: string): boolean => {
     let cur: string | null = locId;
     while (cur) {

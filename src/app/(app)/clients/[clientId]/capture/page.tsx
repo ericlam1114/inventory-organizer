@@ -37,6 +37,7 @@ export default function CapturePage({ params }: { params: Promise<{ clientId: st
         .from('locations')
         .select('id, name')
         .eq('client_id', clientId)
+        .is('deleted_at', null)
         .order('name');
       setLocations(data ?? []);
       if (!initialLocationId && data && data.length > 0) {

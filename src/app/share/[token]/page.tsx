@@ -20,7 +20,8 @@ async function collectSubtreeIds(
   const { data: all } = await admin
     .from('locations')
     .select('id, parent_location_id')
-    .eq('client_id', clientId);
+    .eq('client_id', clientId)
+    .is('deleted_at', null);
   if (!all) return [rootId];
 
   const childrenByParent = new Map<string, string[]>();
@@ -64,6 +65,15 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
         title={`This share expired on ${new Date(share.expires_at).toLocaleDateString()}.`}
       />
     );
+  }
+
+  const { data: activeRoot } = await admin.from('locations')
+    .select('id')
+    .eq('id', share.root_location_id)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (!activeRoot) {
+    return <SharePagePlaceholder title="This shared location is in Trash." />;
   }
 
   // Increment view count (dedup: only if no view within 30 min)

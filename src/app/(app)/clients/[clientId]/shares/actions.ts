@@ -28,6 +28,14 @@ export async function createShare(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Not signed in' };
 
+  const { data: location } = await supabase.from('locations')
+    .select('id')
+    .eq('id', rootLocationId)
+    .eq('client_id', clientId)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (!location) return { error: 'Choose an active location.' };
+
   const token = randomBytes(32).toString('base64url');
   const expiresAt = new Date(Date.now() + expiresInDays * 86400 * 1000).toISOString();
 

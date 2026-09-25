@@ -67,6 +67,7 @@ export function MobileNavDrawer() {
           .from('locations')
           .select('id, name, parent_location_id')
           .eq('client_id', clientId)
+          .is('deleted_at', null)
           .order('name'),
       ]);
       setClientName(client?.name ?? null);

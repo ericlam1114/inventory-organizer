@@ -35,7 +35,8 @@ export default async function SearchPage({
   const { data: locations } = await supabase
     .from('locations')
     .select('id, name')
-    .eq('client_id', clientId);
+    .eq('client_id', clientId)
+    .is('deleted_at', null);
   const locationIds = (locations ?? []).map((l) => l.id);
   const locationNameById = new Map((locations ?? []).map((l) => [l.id, l.name] as const));
 
