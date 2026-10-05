@@ -1,9 +1,9 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { cookies, headers } from 'next/headers';
+import { headers } from 'next/headers';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { signSession } from '@/lib/shares/cookie';
+import { maskEmail, setShareSessionCookie } from '@/lib/shares/session';
 
 const MAX_ATTEMPTS = 5;
 const WINDOW_MS = 15 * 60 * 1000;
@@ -44,33 +44,25 @@ export async function authShare(
     return { error: "This email isn't authorized for this link." };
   }
 
-  const { data: recipient } = await admin
+  const { data: recipients } = await admin
     .from('share_recipients')
     .select('email')
-    .eq('share_id', share.id)
-    .eq('email', email)
-    .maybeSingle();
+    .eq('share_id', share.id);
+  const allowed = (recipients ?? []).map((r) => r.email);
 
-  if (!recipient) {
+  if (!allowed.includes(email)) {
     await admin.from('share_auth_attempts').insert({ token, ip });
-    return { error: "This email isn't authorized for this link." };
+    // Non-technical recipients often type a different address than the one it was
+    // sent to; show a masked hint so they can recognize the right one.
+    const hint = allowed.map(maskEmail).join(' or ');
+    return {
+      error: hint
+        ? `This was shared with ${hint}. Try that email — or open the link in the email you received.`
+        : 'Open the link in the email you received.',
+    };
   }
 
-  // Success — set the signed cookie
-  const cookieExpiry = Math.min(
-    new Date(share.expires_at).getTime(),
-    Date.now() + 7 * 24 * 60 * 60 * 1000,
-  );
-  const sealed = signSession({ token, email, expires: cookieExpiry });
-
-  const cookieStore = await cookies();
-  cookieStore.set(`share-session`, sealed, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: `/share/${token}`,
-    expires: new Date(cookieExpiry),
-  });
+  await setShareSessionCookie(token, email, share.expires_at);
 
   redirect(`/share/${token}`);
 }

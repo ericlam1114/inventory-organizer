@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { randomBytes } from 'crypto';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { personalSharePath } from '@/lib/shares/session';
 
 export async function createShare(
   clientId: string,
@@ -64,7 +65,7 @@ export async function createShare(
   if (recErr) return { error: recErr.message };
 
   // Send emails (best-effort)
-  await sendShareInvites(token, recipients, clientId, rootLocationId, note, user.id);
+  await sendShareInvites(token, expiresAt, recipients, clientId, rootLocationId, note, user.id);
 
   revalidatePath(`/clients/${clientId}/shares`);
   redirect(`/clients/${clientId}/shares`);
@@ -82,6 +83,7 @@ export async function revokeShare(clientId: string, shareId: string) {
 
 async function sendShareInvites(
   token: string,
+  expiresAt: string,
   recipients: string[],
   clientId: string,
   rootLocationId: string | null,
@@ -100,12 +102,12 @@ async function sendShareInvites(
     : await admin.from('clients').select('name').eq('id', clientId).maybeSingle();
   const senderName = profile?.display_name ?? 'Straighten Up Home';
   const subtreeName = scope?.name ?? 'Inventory';
-  const shareUrl = `${appUrl}/share/${token}`;
 
   const { Resend } = await import('resend');
   const resend = new Resend(resendKey);
 
   await Promise.allSettled(recipients.map(async (email) => {
+    const shareUrl = `${appUrl}${personalSharePath(token, email, expiresAt)}`;
     const subject = `${senderName} shared "${subtreeName}" with you`;
     const text = [
       `${senderName} shared an inventory subset with you on her organization app.`,
@@ -114,14 +116,14 @@ async function sendShareInvites(
       ``,
       `Open: ${shareUrl}`,
       ``,
-      `You'll be asked to enter this email address (${email}) to view.`,
+      `This link is just for you (${email}).`,
     ].join('\n');
     const html = `<div style="font-family:Inter,sans-serif;color:#14385A;background:#FFFFFF;padding:24px;">
       <p>${escapeHtml(senderName)} shared an inventory subset with you on her organization app.</p>
       ${note ? `<blockquote style="border-left:2px solid #14385A;padding:8px 16px;margin:16px 0;color:#3E5572;">${escapeHtml(note)}</blockquote>` : ''}
       <p><strong>Subset:</strong> ${escapeHtml(subtreeName)}</p>
       <p><a href="${shareUrl}" style="display:inline-block;background:#14385A;color:#FFFFFF;text-decoration:none;padding:10px 16px;border-radius:2px;font-weight:500;">Open inventory →</a></p>
-      <p style="font-size:12px;color:#8A98A8;margin-top:32px;">You'll be asked to enter this email address (${escapeHtml(email)}) to view.</p>
+      <p style="font-size:12px;color:#8A98A8;margin-top:32px;">This link is just for you (${escapeHtml(email)}).</p>
     </div>`;
     await resend.emails.send({ from: resendFrom, to: email, subject, text, html });
   }));

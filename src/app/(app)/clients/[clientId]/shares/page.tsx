@@ -3,6 +3,7 @@ import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { ShareDashboardClient } from './ShareDashboardClient';
+import { personalSharePath } from '@/lib/shares/session';
 
 export default async function SharesPage({ params }: { params: Promise<{ clientId: string }> }) {
   const { clientId } = await params;
@@ -21,10 +22,17 @@ export default async function SharesPage({ params }: { params: Promise<{ clientI
   const { data: recipients } = shareIds.length > 0
     ? await supabase.from('share_recipients').select('share_id, email, view_count, last_viewed_at').in('share_id', shareIds)
     : { data: [] };
-  const recipientsByShare = new Map<string, Array<{ email: string; viewCount: number; lastViewed: string | null }>>();
+  const shareById = new Map((shares ?? []).map((s) => [s.id, s] as const));
+  const recipientsByShare = new Map<string, Array<{ email: string; viewCount: number; lastViewed: string | null; personalPath: string | null }>>();
   for (const r of recipients ?? []) {
     const list = recipientsByShare.get(r.share_id) ?? [];
-    list.push({ email: r.email, viewCount: r.view_count, lastViewed: r.last_viewed_at });
+    const share = shareById.get(r.share_id);
+    list.push({
+      email: r.email,
+      viewCount: r.view_count,
+      lastViewed: r.last_viewed_at,
+      personalPath: share ? personalSharePath(share.token, r.email, share.expires_at) : null,
+    });
     recipientsByShare.set(r.share_id, list);
   }
 

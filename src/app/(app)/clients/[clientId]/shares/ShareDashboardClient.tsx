@@ -14,7 +14,7 @@ type ActiveShare = {
   id: string;
   token: string;
   locationName: string;
-  recipients: Array<{ email: string; viewCount: number; lastViewed: string | null }>;
+  recipients: Array<{ email: string; viewCount: number; lastViewed: string | null; personalPath: string | null }>;
   expiresAt: string;
   createdAt: string;
 };
@@ -32,10 +32,9 @@ export function ShareDashboardClient({
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
-  function copyLink(token: string) {
-    const url = `${window.location.origin}/share/${token}`;
-    navigator.clipboard.writeText(url);
-    toast.success('Link copied');
+  function copyLink(path: string, email: string) {
+    navigator.clipboard.writeText(`${window.location.origin}${path}`);
+    toast.success(`Link for ${email} copied — they can open it without typing anything`);
   }
 
   function handleRevoke(shareId: string) {
@@ -102,7 +101,7 @@ export function ShareDashboardClient({
                 share={s}
                 kind="active"
                 pending={pending}
-                onCopy={() => copyLink(s.token)}
+                onCopy={copyLink}
                 onRevoke={() => handleRevoke(s.id)}
               />
             ))}
@@ -135,12 +134,12 @@ function ShareRow({ share: s, kind, pending, onCopy, onRevoke }: {
   share: ActiveShare | InactiveShare;
   kind: 'active' | 'inactive';
   pending: boolean;
-  onCopy?: () => void;
+  onCopy?: (path: string, email: string) => void;
   onRevoke?: () => void;
 }) {
   const totalViews = s.recipients.reduce((a, r) => a + r.viewCount, 0);
   return (
-    <li className="group px-4 py-3 hover:bg-paper flex items-center gap-3 min-h-[48px]">
+    <li className="group px-4 py-3 hover:bg-paper flex flex-wrap items-center gap-3 min-h-[48px]">
       <div className="min-w-0 flex-1">
         <p className="text-[14px] font-medium">{s.locationName}</p>
         <p className="text-ink3 text-[12px] truncate">
@@ -154,10 +153,18 @@ function ShareRow({ share: s, kind, pending, onCopy, onRevoke }: {
         </p>
       </div>
       {kind === 'active' && (
-        <div className="flex gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onClick={onCopy} className="inline-flex items-center gap-1 bg-surface border border-rule px-3 py-2 rounded-[2px] hover:bg-paper text-[12px] min-h-[36px]" title="Copy link">
-            <LinkIcon size={12} /> Copy
-          </button>
+        <div className="flex flex-wrap gap-2 shrink-0 justify-end">
+          {s.recipients.filter((r) => r.personalPath).map((r) => (
+            <button
+              key={r.email}
+              onClick={() => onCopy?.(r.personalPath!, r.email)}
+              className="inline-flex items-center gap-1 bg-surface border border-rule px-3 py-2 rounded-[2px] hover:bg-paper text-[12px] min-h-[36px] max-w-[220px]"
+              title={`Copy ${r.email}'s personal link`}
+            >
+              <LinkIcon size={12} className="shrink-0" />
+              <span className="truncate">{s.recipients.length > 1 ? `Copy ${r.email.split('@')[0]}'s link` : 'Copy link'}</span>
+            </button>
+          ))}
           <button onClick={onRevoke} disabled={pending} className="bg-surface border border-rule px-3 py-2 rounded-[2px] hover:bg-paper text-[12px] text-danger disabled:opacity-50 min-h-[36px]">
             Revoke
           </button>
