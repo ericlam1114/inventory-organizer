@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { MessageSquare, Search } from 'lucide-react';
+import { Link as LinkIcon, MessageSquare, Search } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getSignedPhotoUrlsServer } from '@/lib/photos/public-url.server';
 import { Avatar } from '@/components/Avatar';
@@ -9,8 +9,11 @@ import { MarkAllSeenButton } from './MarkAllSeenButton';
 
 type FeedRow = {
   comment_id: string;
+  source: 'team' | 'share';
   body: string;
-  author_id: string;
+  author_id: string | null;
+  author_email: string | null;
+  share_id: string | null;
   created_at: string;
   item_id: string;
   item_title: string;
@@ -43,7 +46,7 @@ export default async function CommentsFeedPage({
   const newCount = all.filter((r) => r.is_new).length;
   const feed = filter === 'new' ? all.filter((r) => r.is_new) : all;
 
-  const authorIds = Array.from(new Set(feed.map((r) => r.author_id)));
+  const authorIds = Array.from(new Set(feed.map((r) => r.author_id).filter(Boolean) as string[]));
   const coverIds = Array.from(new Set(feed.map((r) => r.cover_photo_id).filter(Boolean) as string[]));
   const [{ data: profiles }, { data: covers }] = await Promise.all([
     authorIds.length > 0
@@ -117,7 +120,7 @@ export default async function CommentsFeedPage({
       ) : (
         <ul className="divide-y divide-rule rounded-[4px] border border-rule bg-surface">
           {feed.map((r) => {
-            const author = nameById.get(r.author_id) ?? 'Someone';
+            const author = (r.author_id ? nameById.get(r.author_id) : r.author_email) ?? 'Someone';
             const bodyText = r.body.replace(/@\[([^\]]+)\]\([0-9a-f-]{36}\)/g, '@$1');
             const coverUrl = r.cover_photo_id ? coverUrlById.get(r.cover_photo_id) : null;
             return (
@@ -150,7 +153,14 @@ export default async function CommentsFeedPage({
                         <span className="font-medium text-ink">{author}</span> {bodyText}
                       </p>
                     </div>
-                    <p className="text-ink3 text-[11px] mt-1">{new Date(r.created_at).toLocaleString()}</p>
+                    <p className="text-ink3 text-[11px] mt-1 flex items-center gap-1.5">
+                      {r.source === 'share' && (
+                        <span className="inline-flex items-center gap-1 text-ink2">
+                          <LinkIcon size={10} aria-hidden /> Share link ·
+                        </span>
+                      )}
+                      {new Date(r.created_at).toLocaleString()}
+                    </p>
                   </div>
                 </Link>
               </li>

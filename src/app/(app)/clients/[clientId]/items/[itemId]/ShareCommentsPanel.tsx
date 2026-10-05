@@ -79,7 +79,7 @@ function Thread({ itemId, thread }: { itemId: string; thread: ShareThread }) {
 
       <ul className="space-y-4">
         {thread.comments.map((c) => (
-          <li key={c.id} className="space-y-1">
+          <li key={c.id} id={`comment-${c.id}`} className="space-y-1 scroll-mt-24">
             <div className="flex items-baseline gap-2 text-[13px]">
               <span className="font-medium text-ink truncate">{c.authorLabel}</span>
               {c.isTeam && <span className="text-ink3 uppercase tracking-wide text-[11px]">Team</span>}
