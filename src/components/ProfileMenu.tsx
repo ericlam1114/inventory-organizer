@@ -66,6 +66,9 @@ export function ProfileMenu() {
               <div className="border-t border-rule my-1" />
             </>
           )}
+          <a href="/settings/password" className="block px-4 py-2 text-[14px] text-ink hover:bg-sand2">
+            Set password
+          </a>
           <form action="/auth/signout" method="post">
             <button
               type="submit"

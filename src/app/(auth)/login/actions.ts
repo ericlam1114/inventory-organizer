@@ -1,5 +1,6 @@
 'use server';
 
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
 export async function sendMagicLink(
@@ -34,4 +35,20 @@ export async function sendMagicLink(
     return { error: 'No access — ask Janelle for an invite.' };
   }
   return { sent: true };
+}
+
+export async function signInWithPassword(
+  _prev: { error?: string },
+  formData: FormData
+): Promise<{ error?: string }> {
+  const email = String(formData.get('email') ?? '').trim().toLowerCase();
+  const password = String(formData.get('password') ?? '');
+  if (!email || !password) return { error: 'Enter your email and password' };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    return { error: 'That email and password don’t match. Forgot it? Ask Janelle for a login link.' };
+  }
+  redirect('/clients');
 }

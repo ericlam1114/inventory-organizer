@@ -191,7 +191,7 @@ function CreateShareForm({ clientId, locations, onCancel, onCreated }: {
         if (result?.error) {
           setError(result.error);
         } else {
-          toast.success('Share created and sent');
+          toast.success('Share created — tap “Copy link” next to each person and text it to them');
           onCreated();
         }
       })}

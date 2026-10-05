@@ -1,105 +1,71 @@
-'use client';
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { TeamClient, type Member, type PendingInvite } from './TeamClient';
 
-import { useActionState, useState, useEffect } from 'react';
-import { inviteOrgTeamMember } from './actions';
-import { createClient } from '@/lib/supabase/client';
+const ROLE_LABEL: Record<string, string> = {
+  super_admin: 'Owner',
+  org_team_all: 'Team · all clients',
+  org_team_per_client: 'Team',
+  client_admin: 'Client admin',
+  client_team: "Client's team",
+};
 
-export default function TeamSettingsPage() {
-  const [state, action, pending] = useActionState<{ error?: string; sent?: boolean }, FormData>(
-    inviteOrgTeamMember,
-    {}
-  );
-  const [scope, setScope] = useState<'all_clients' | 'per_client'>('all_clients');
-  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
+export default async function TeamSettingsPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+  const { data: isAdmin } = await supabase
+    .from('org_roles').select('role').eq('user_id', user.id).eq('role', 'super_admin').maybeSingle();
+  if (!isAdmin) redirect('/clients');
 
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.from('clients').select('id, name').order('name').then(({ data }) => {
-      if (data) setClients(data);
-    });
-  }, []);
+  const admin = createAdminClient();
+  const now = new Date().toISOString();
+  const [{ data: clients }, { data: invites }, { data: orgRoles }, { data: memberships }] = await Promise.all([
+    supabase.from('clients').select('id, name').order('name'),
+    supabase.from('team_invites')
+      .select('id, token, role, client_ids, label, expires_at, created_at')
+      .is('used_at', null).is('revoked_at', null).gt('expires_at', now)
+      .order('created_at', { ascending: false }),
+    admin.from('org_roles').select('user_id, role'),
+    admin.from('client_memberships').select('user_id, client_id, role'),
+  ]);
 
-  return (
-    <div className="w-full max-w-5xl px-6 lg:px-12 py-8 lg:py-12">
-      <div className="mb-8">
-        <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em]">Invite team member</h1>
-        <p className="text-ink3 text-[14px] mt-1">Add a teammate to one or all clients</p>
-      </div>
-      {state.sent ? (
-        <p className="text-ink2">Invite sent. They&apos;ll get an email with a magic link.</p>
-      ) : (
-        <div className="max-w-md mx-auto bg-surface border border-rule rounded-[4px] p-6 lg:p-8">
-          <form action={action} className="space-y-5">
-            <div>
-              <label htmlFor="email" className="block text-[13px] font-medium mb-2">Email</label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="w-full bg-surface border border-rule px-3 py-2.5 rounded-[2px] focus:outline-none focus:border-ink focus:ring-2 focus:ring-ink/10"
-              />
-            </div>
-            <div>
-              <label htmlFor="displayName" className="block text-[13px] font-medium mb-2">Display name</label>
-              <input
-                id="displayName"
-                name="displayName"
-                type="text"
-                required
-                className="w-full bg-surface border border-rule px-3 py-2.5 rounded-[2px] focus:outline-none focus:border-ink focus:ring-2 focus:ring-ink/10"
-              />
-            </div>
-            <div>
-              <label className="block text-[13px] font-medium mb-2">Scope</label>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-[14px]">
-                  <input
-                    type="radio"
-                    name="scope"
-                    value="all_clients"
-                    checked={scope === 'all_clients'}
-                    onChange={() => setScope('all_clients')}
-                  />
-                  All clients
-                </label>
-                <label className="flex items-center gap-2 text-[14px]">
-                  <input
-                    type="radio"
-                    name="scope"
-                    value="per_client"
-                    checked={scope === 'per_client'}
-                    onChange={() => setScope('per_client')}
-                  />
-                  Specific clients
-                </label>
-              </div>
-            </div>
-            {scope === 'per_client' && (
-              <div>
-                <label className="block text-[13px] font-medium mb-2">Clients</label>
-                <select
-                  multiple
-                  name="clientIds"
-                  className="w-full bg-surface border border-rule px-3 py-2.5 rounded-[2px] focus:outline-none focus:border-ink focus:ring-2 focus:ring-ink/10"
-                >
-                  {clients.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-            {state.error && <p className="text-danger text-[13px]">{state.error}</p>}
-            <button
-              type="submit"
-              disabled={pending}
-              className="w-full bg-ink text-paper py-2.5 rounded-[2px] hover:bg-ink2 disabled:opacity-60"
-            >
-              {pending ? 'Sending…' : 'Send invite'}
-            </button>
-          </form>
-        </div>
-      )}
-    </div>
-  );
+  const clientName = new Map((clients ?? []).map((c) => [c.id, c.name] as const));
+  const accessByUser = new Map<string, string[]>();
+  for (const r of orgRoles ?? []) {
+    accessByUser.set(r.user_id, [...(accessByUser.get(r.user_id) ?? []), ROLE_LABEL[r.role] ?? r.role]);
+  }
+  for (const m of memberships ?? []) {
+    const label = `${ROLE_LABEL[m.role] ?? m.role} · ${clientName.get(m.client_id) ?? 'client'}`;
+    accessByUser.set(m.user_id, [...(accessByUser.get(m.user_id) ?? []), label]);
+  }
+
+  const userIds = Array.from(accessByUser.keys());
+  const { data: profiles } = userIds.length > 0
+    ? await admin.from('profiles').select('id, email, display_name, deleted_at').in('id', userIds)
+    : { data: [] };
+
+  const members: Member[] = (profiles ?? [])
+    .filter((p) => !p.deleted_at)
+    .map((p) => ({
+      id: p.id,
+      name: p.display_name,
+      email: p.email,
+      access: accessByUser.get(p.id) ?? [],
+      isSelf: p.id === user.id,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const pending: PendingInvite[] = (invites ?? []).map((i) => ({
+    id: i.id,
+    path: `/join/${i.token}`,
+    label: i.label,
+    access: i.role === 'org_team_all'
+      ? ROLE_LABEL.org_team_all
+      : `${ROLE_LABEL[i.role]} · ${(i.client_ids as string[]).map((id) => clientName.get(id) ?? 'client').join(', ')}`,
+    expiresAt: i.expires_at,
+  }));
+
+  return <TeamClient clients={clients ?? []} members={members} pending={pending} />;
 }
