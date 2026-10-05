@@ -7,7 +7,7 @@ export function ShareViewerBanner({ senderName, expiresAt, note }: {
     <div className="bg-sand2 border-b border-rule px-6 lg:px-8 py-4">
       <div className="max-w-5xl mx-auto flex items-start justify-between gap-4">
         <div className="text-[13px] text-ink2">
-          Shared by <span className="font-medium text-ink">{senderName}</span> &middot; Expires {new Date(expiresAt).toLocaleDateString()} &middot; <span className="uppercase tracking-wide">View only</span>
+          Shared by <span className="font-medium text-ink">{senderName}</span> &middot; Expires {new Date(expiresAt).toLocaleDateString()}<span className="hidden sm:inline"> &middot; Tap an item to see all photos and leave a comment</span>
         </div>
       </div>
       {note && (

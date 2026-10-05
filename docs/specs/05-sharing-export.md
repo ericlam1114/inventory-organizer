@@ -8,6 +8,12 @@ last_updated: 2026-05-16
 
 # Slice 05 — Sharing + filtered export
 
+> **Update 2026-10-05 (migration 0017), from Janelle's feedback:**
+> - **Whole-client shares** — `shares.root_location_id` is nullable; `null` = every active location for the client. The create form defaults to "Entire client"; the viewer groups items by location.
+> - **Guest comments** — recipients can comment on items via the link (`share_comments`, author = authenticated share email, inserted server-side with service role after cookie + scope checks). Each share has its own thread per item; recipients see only their share's thread. The team sees threads on the item page ("Comments from share links"), can reply (`author_id`) or hide (soft-delete). The share creator gets an immediate Resend email per guest comment.
+> - **Photo lightbox** in the shared item view (tap + swipe).
+> - Sections below that say "read-only / no comments" are superseded by this note.
+
 ## Purpose
 
 The fix for the transcript's #4 pain point: "If they're going to send that to her agent or insurance now they need access." After this slice, Janelle (or a `client_admin`) can share any location subtree of a client's inventory with one or more named recipients via a read-only, email-gated, expiring link — without giving anyone a Supabase account or access to the wider inventory.

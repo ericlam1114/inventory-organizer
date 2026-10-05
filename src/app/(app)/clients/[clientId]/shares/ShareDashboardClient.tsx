@@ -6,6 +6,9 @@ import { Plus, Link as LinkIcon, Share2 } from 'lucide-react';
 import { createShare, revokeShare } from './actions';
 import { toast } from '@/lib/toast';
 
+// Form value for whole-client shares; createShare stores it as a null root.
+const ENTIRE_CLIENT = 'all';
+
 type Location = { id: string; name: string; parentLocationId: string | null };
 type ActiveShare = {
   id: string;
@@ -82,7 +85,7 @@ export function ShareDashboardClient({
             </div>
             <h3 className="text-[16px] font-medium mb-1">No active shares</h3>
             <p className="text-ink3 text-[14px] mb-5 max-w-xs mx-auto">
-              Share a location subtree with insurance agents or anyone who needs to view the inventory.
+              Share the whole client or a single location with anyone who needs to see the inventory. Recipients can browse photos and leave comments.
             </p>
             <button
               type="button"
@@ -188,14 +191,16 @@ function CreateShareForm({ clientId, locations, onCancel, onCreated }: {
       className="bg-surface border border-rule rounded-[4px] p-6 space-y-5"
     >
       <div>
-        <label htmlFor="rootLocationId" className="block text-[13px] font-medium mb-2">Subtree root</label>
+        <label htmlFor="rootLocationId" className="block text-[13px] font-medium mb-2">What to share</label>
         <select id="rootLocationId" name="rootLocationId" required
           className="w-full bg-surface border border-rule px-3 py-2.5 rounded-[2px]"
-          defaultValue="">
-          <option value="" disabled>Pick a location…</option>
-          {locations.map((l) => (
-            <option key={l.id} value={l.id}>{l.name}</option>
-          ))}
+          defaultValue={ENTIRE_CLIENT}>
+          <option value={ENTIRE_CLIENT}>Entire client — all locations</option>
+          <optgroup label="Or just one location">
+            {locations.map((l) => (
+              <option key={l.id} value={l.id}>{l.name}</option>
+            ))}
+          </optgroup>
         </select>
       </div>
       <div>
