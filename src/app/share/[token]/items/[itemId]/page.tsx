@@ -4,19 +4,23 @@ import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { verifySession } from '@/lib/shares/cookie';
-import { getShareByToken, isItemInShare, isShareLive } from '@/lib/shares/scope';
+import { getShareByToken, getShareLocationIds, isItemInShare, isShareLive } from '@/lib/shares/scope';
 import { Brand } from '@/components/Brand';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ShareViewerBanner } from '../../ShareViewerBanner';
 import { SharePhotos } from './SharePhotos';
 import { ShareComments } from './ShareComments';
+import { ItemNavigator } from '@/app/(app)/clients/[clientId]/items/[itemId]/ItemNavigator';
 
 export default async function ShareItemPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string; itemId: string }>;
+  searchParams: Promise<{ photos?: string }>;
 }) {
   const { token, itemId } = await params;
+  const autoOpenPhotos = (await searchParams).photos === '1';
   const cookieStore = await cookies();
   const session = verifySession(cookieStore.get('share-session')?.value, token);
   if (!session) redirect(`/share/${token}/auth`);
@@ -62,6 +66,23 @@ export default async function ShareItemPage({
       .order('created_at'),
   ]);
 
+  // Neighbouring items in the album's order (grouped by location A–Z, newest first)
+  const locIds = (await getShareLocationIds(admin, share)) ?? [];
+  const [{ data: siblingRows }, { data: siblingLocs }] = await Promise.all([
+    admin.from('items').select('id, location_id, created_at').in('location_id', locIds)
+      .order('created_at', { ascending: false }).order('id'),
+    admin.from('locations').select('id, name').in('id', locIds),
+  ]);
+  const locName = new Map((siblingLocs ?? []).map((l) => [l.id, l.name] as const));
+  const siblingIds = (siblingRows ?? [])
+    .map((r, i) => ({ id: r.id, loc: locName.get(r.location_id) ?? '', i }))
+    .sort((a, b) => a.loc.localeCompare(b.loc) || a.i - b.i)
+    .map((r) => r.id);
+  const pos = siblingIds.indexOf(itemId);
+  const shareItemHref = (id: string | undefined) => (id ? `/share/${token}/items/${id}` : null);
+  const prevHref = pos > 0 ? shareItemHref(siblingIds[pos - 1]) : null;
+  const nextHref = pos >= 0 ? shareItemHref(siblingIds[pos + 1]) : null;
+
   const teamIds = Array.from(new Set((comments ?? []).map((c) => c.author_id).filter(Boolean) as string[]));
   const { data: teamProfiles } = teamIds.length > 0
     ? await admin.from('profiles').select('id, display_name').in('id', teamIds)
@@ -92,14 +113,21 @@ export default async function ShareItemPage({
         note={share.note}
       />
       <div className="flex-1 p-6 lg:p-12 max-w-3xl mx-auto w-full space-y-6">
-        <Link
-          href={`/share/${token}`}
-          className="inline-flex items-center gap-1 text-ink2 hover:text-ink text-[13px]"
-        >
-          <ChevronLeft size={14} /> Back
-        </Link>
+        <div className="flex items-center justify-between gap-4">
+          <Link
+            href={`/share/${token}`}
+            className="inline-flex items-center gap-1 text-ink2 hover:text-ink text-[13px]"
+          >
+            <ChevronLeft size={14} /> Back
+          </Link>
+          <ItemNavigator prevHref={prevHref} nextHref={nextHref} position={pos + 1} total={siblingIds.length} />
+        </div>
 
         <SharePhotos
+          key={itemId}
+          prevItemHref={prevHref ? `${prevHref}?photos=1` : null}
+          nextItemHref={nextHref ? `${nextHref}?photos=1` : null}
+          autoOpen={autoOpenPhotos}
           itemTitle={item.title}
           photos={ordered.map((p) => ({ id: p.id, signedUrl: signed.get(p.storage_path) ?? null }))}
         />

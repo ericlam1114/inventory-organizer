@@ -15,10 +15,13 @@ import { MarkCommentsSeen } from '@/components/MarkCommentsSeen';
 
 export default async function ItemDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ clientId: string; itemId: string }>;
+  searchParams: Promise<{ photos?: string }>;
 }) {
   const { clientId, itemId } = await params;
+  const autoOpenPhotos = (await searchParams).photos === '1';
   const supabase = await createClient();
 
   const { data: item } = await supabase
@@ -198,6 +201,10 @@ export default async function ItemDetailPage({
       </div>
 
       <ItemPhotos
+        key={itemId}
+        prevItemHref={prevHref ? `${prevHref}?photos=1` : null}
+        nextItemHref={nextHref ? `${nextHref}?photos=1` : null}
+        autoOpen={autoOpenPhotos}
         clientId={clientId}
         itemId={itemId}
         itemTitle={item.title}

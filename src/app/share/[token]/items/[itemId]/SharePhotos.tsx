@@ -7,8 +7,14 @@ import { PhotoLightbox } from '@/components/PhotoLightbox';
 type Photo = { id: string; signedUrl: string | null };
 
 /** Cover + thumbnail strip; tapping any photo opens the swipeable lightbox. */
-export function SharePhotos({ itemTitle, photos }: { itemTitle: string; photos: Photo[] }) {
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+export function SharePhotos({ itemTitle, photos, prevItemHref = null, nextItemHref = null, autoOpen = false }: {
+  itemTitle: string;
+  photos: Photo[];
+  prevItemHref?: string | null;
+  nextItemHref?: string | null;
+  autoOpen?: boolean;
+}) {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(autoOpen && photos.length > 0 ? 0 : null);
   if (photos.length === 0) return null;
   const [cover, ...others] = photos;
 
@@ -26,7 +32,7 @@ export function SharePhotos({ itemTitle, photos }: { itemTitle: string; photos: 
       </button>
 
       {others.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto">
+        <div data-no-swipe className="flex gap-2 overflow-x-auto">
           {others.map((p, idx) => (
             <button
               key={p.id}
@@ -47,6 +53,8 @@ export function SharePhotos({ itemTitle, photos }: { itemTitle: string; photos: 
           index={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
           onNav={setLightboxIndex}
+          prevItemHref={prevItemHref}
+          nextItemHref={nextItemHref}
         />
       )}
     </div>

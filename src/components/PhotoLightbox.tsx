@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useCallback, useRef, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -12,6 +13,8 @@ export function PhotoLightbox({
   onClose,
   onNav,
   actions,
+  prevItemHref,
+  nextItemHref,
 }: {
   photos: LightboxPhoto[];
   index: number;
@@ -19,14 +22,31 @@ export function PhotoLightbox({
   onNav: (i: number) => void;
   /** Optional controls rendered under the photo (e.g. make cover / delete) */
   actions?: ReactNode;
+  /** Past the first/last photo, continue to the neighbouring item (album-style browsing) */
+  prevItemHref?: string | null;
+  nextItemHref?: string | null;
 }) {
+  const router = useRouter();
   const photo = photos[index];
   const touchStartX = useRef<number | null>(null);
-  const hasPrev = index > 0;
-  const hasNext = index < photos.length - 1;
+  const hasPrevPhoto = index > 0;
+  const hasNextPhoto = index < photos.length - 1;
+  const hasPrev = hasPrevPhoto || !!prevItemHref;
+  const hasNext = hasNextPhoto || !!nextItemHref;
 
-  const goPrev = useCallback(() => { if (hasPrev) onNav(index - 1); }, [hasPrev, index, onNav]);
-  const goNext = useCallback(() => { if (hasNext) onNav(index + 1); }, [hasNext, index, onNav]);
+  useEffect(() => {
+    if (prevItemHref) router.prefetch(prevItemHref);
+    if (nextItemHref) router.prefetch(nextItemHref);
+  }, [router, prevItemHref, nextItemHref]);
+
+  const goPrev = useCallback(() => {
+    if (hasPrevPhoto) onNav(index - 1);
+    else if (prevItemHref) router.replace(prevItemHref, { scroll: false });
+  }, [hasPrevPhoto, index, onNav, prevItemHref, router]);
+  const goNext = useCallback(() => {
+    if (hasNextPhoto) onNav(index + 1);
+    else if (nextItemHref) router.replace(nextItemHref, { scroll: false });
+  }, [hasNextPhoto, index, onNav, nextItemHref, router]);
 
   useEffect(() => {
     function handle(e: KeyboardEvent) {
@@ -69,7 +89,7 @@ export function PhotoLightbox({
       {hasPrev && (
         <button
           type="button"
-          aria-label="Previous photo"
+          aria-label={hasPrevPhoto ? 'Previous photo' : 'Previous item'}
           onClick={(e) => { e.stopPropagation(); goPrev(); }}
           className="absolute left-4 text-paper hover:text-sand2 z-10"
         >
@@ -94,7 +114,7 @@ export function PhotoLightbox({
       {hasNext && (
         <button
           type="button"
-          aria-label="Next photo"
+          aria-label={hasNextPhoto ? 'Next photo' : 'Next item'}
           onClick={(e) => { e.stopPropagation(); goNext(); }}
           className="absolute right-4 text-paper hover:text-sand2 z-10"
         >

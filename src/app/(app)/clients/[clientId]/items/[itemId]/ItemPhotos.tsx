@@ -14,18 +14,23 @@ import { PhotoLightbox } from '@/components/PhotoLightbox';
 type PhotoInput = { id: string; storagePath: string; signedUrl: string | null };
 
 export function ItemPhotos({
-  clientId, itemId, itemTitle, photos, coverPhotoId,
+  clientId, itemId, itemTitle, photos, coverPhotoId, prevItemHref = null, nextItemHref = null, autoOpen = false,
 }: {
   clientId: string;
   itemId: string;
   itemTitle: string;
   photos: PhotoInput[];
   coverPhotoId: string | null;
+  /** Album browsing: the full-screen viewer continues into these items */
+  prevItemHref?: string | null;
+  nextItemHref?: string | null;
+  /** Open the full-screen viewer on arrival (when coming from the previous item's viewer) */
+  autoOpen?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(autoOpen && photos.length > 0 ? 0 : null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const cover = photos.find((p) => p.id === coverPhotoId) ?? photos[0];
@@ -202,6 +207,8 @@ export function ItemPhotos({
           onClose={() => { setLightboxIndex(null); setConfirmDeleteId(null); }}
           onNav={(i) => { setLightboxIndex(i); setConfirmDeleteId(null); }}
           actions={lightboxActions}
+          prevItemHref={prevItemHref}
+          nextItemHref={nextItemHref}
         />
       )}
     </div>
