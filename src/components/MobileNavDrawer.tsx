@@ -17,8 +17,11 @@ import {
   Sliders,
   Folder,
   LogOut,
+  MessageSquare,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useIsSuperAdmin } from '@/lib/use-is-super-admin';
+import { useCommentsUnreadCount, CountBadge } from '@/components/CommentsUnreadBadge';
 
 type Location = { id: string; name: string; parent_location_id: string | null };
 
@@ -154,10 +157,11 @@ export function MobileNavDrawer() {
 }
 
 function RootNavItems({ pathname }: { pathname: string }) {
+  const isAdmin = useIsSuperAdmin();
   const tabs = [
     { href: '/clients',       label: 'Clients',       icon: Users,      active: pathname === '/clients' || pathname.startsWith('/clients?') },
     { href: '/notifications', label: 'Notifications', icon: Bell,       active: pathname.startsWith('/notifications') },
-    { href: '/settings/team', label: 'Team',          icon: UserCircle, active: pathname.startsWith('/settings') },
+    ...(isAdmin ? [{ href: '/settings/team', label: 'Team', icon: UserCircle, active: pathname.startsWith('/settings') }] : []),
   ];
   return (
     <>
@@ -189,18 +193,22 @@ function ClientNavItems({
   locations: Location[];
 }) {
   const base = `/clients/${clientId}`;
-  const tabs = [
+  const isAdmin = useIsSuperAdmin();
+  const unreadComments = useCommentsUnreadCount(clientId);
+  const tabs: Array<{ href: string; label: string; icon: typeof Compass; active: boolean; badge?: number }> = [
     { href: base,                          label: 'Browse',        icon: Compass, active: pathname === base || pathname.startsWith(`${base}/locations`) || pathname.startsWith(`${base}/items`) },
     { href: `${base}/capture`,             label: 'Capture',       icon: Camera,  active: pathname.startsWith(`${base}/capture`) },
     { href: `${base}/search`,              label: 'Search',        icon: Search,  active: pathname.startsWith(`${base}/search`) },
+    { href: `${base}/comments`,            label: 'Comments',      icon: MessageSquare, active: pathname.startsWith(`${base}/comments`), badge: unreadComments },
     { href: `${base}/shares`,              label: 'Shares',        icon: Share2,  active: pathname.startsWith(`${base}/shares`) },
     { href: `${base}/settings/fields`,     label: 'Custom fields', icon: Sliders, active: pathname.startsWith(`${base}/settings/fields`) },
     { href: '/notifications',              label: 'Notifications', icon: Bell,    active: pathname === '/notifications' },
+    ...(isAdmin ? [{ href: '/settings/team', label: 'Team', icon: UserCircle, active: pathname.startsWith('/settings') }] : []),
     { href: '/clients',                    label: 'All clients',   icon: Users,   active: false },
   ];
   return (
     <>
-      {tabs.map(({ href, label, icon: Icon, active }) => (
+      {tabs.map(({ href, label, icon: Icon, active, badge }) => (
         <Link
           key={href}
           href={href}
@@ -211,7 +219,8 @@ function ClientNavItems({
           }`}
         >
           <Icon size={16} aria-hidden />
-          {label}
+          <span className="flex-1">{label}</span>
+          {badge ? <CountBadge count={badge} /> : null}
         </Link>
       ))}
 

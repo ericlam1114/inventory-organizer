@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
-import { Compass, Camera, Search, Bell, Folder, Share2, Sliders, MessageSquare } from 'lucide-react';
+import { Compass, Camera, Search, Bell, Folder, Share2, Sliders, MessageSquare, UserCircle } from 'lucide-react';
+import { useIsSuperAdmin } from '@/lib/use-is-super-admin';
 import { useCommentsUnreadCount, CountBadge } from '@/components/CommentsUnreadBadge';
 
 type Location = { id: string; name: string; parent_location_id: string | null };
@@ -83,6 +84,7 @@ export function ClientSidebar({ clientName, locations, itemCount, needsCount }: 
   const clientId = params.clientId;
   const base = `/clients/${clientId}`;
   const unreadComments = useCommentsUnreadCount(clientId);
+  const isAdmin = useIsSuperAdmin();
 
   const tabs = [
     { href: base,                          label: 'Browse',        icon: Compass,  active: pathname === base || pathname.startsWith(`${base}/locations`) || pathname.startsWith(`${base}/items`) },
@@ -92,6 +94,7 @@ export function ClientSidebar({ clientName, locations, itemCount, needsCount }: 
     { href: `${base}/shares`,              label: 'Shares',        icon: Share2,   active: pathname.startsWith(`${base}/shares`) },
     { href: `${base}/settings/fields`,     label: 'Custom fields', icon: Sliders,  active: pathname.startsWith(`${base}/settings/fields`) },
     { href: '/notifications',              label: 'Notifications', icon: Bell,     active: pathname === '/notifications' },
+    ...(isAdmin ? [{ href: '/settings/team', label: 'Team', icon: UserCircle, active: pathname.startsWith('/settings') }] : []),
   ];
 
   const byParent = buildTree(locations);
