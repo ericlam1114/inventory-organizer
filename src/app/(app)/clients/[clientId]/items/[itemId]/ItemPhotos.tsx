@@ -150,7 +150,7 @@ export function ItemPhotos({
       )}
 
       {others.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto">
+        <div data-no-swipe className="flex gap-2 overflow-x-auto">
           {others.map((p, idx) => (
             // Tap opens the lightbox (idx+1 because cover is 0); cover/delete live there
             <button

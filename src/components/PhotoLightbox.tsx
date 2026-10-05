@@ -42,6 +42,7 @@ export function PhotoLightbox({
 
   return (
     <div
+      data-lightbox
       className="fixed inset-0 z-[200] flex items-center justify-center bg-ink/90 backdrop-blur"
       onClick={onClose}
       onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}

@@ -33,6 +33,8 @@ export default async function ClientHomePage({ params }: { params: Promise<{ cli
     needsMetadata: boolean;
     createdAt: string;
     coverSignedUrl: string | null;
+    commentCount: number;
+    newCommentCount: number;
   }> = [];
 
   if (locationIds.length > 0) {
@@ -59,6 +61,15 @@ export default async function ClientHomePage({ params }: { params: Promise<{ cli
       }
     }
 
+    const rawIds = (rawItems ?? []).map((i) => i.id);
+    const { data: commentCounts } = rawIds.length > 0
+      ? await supabase.rpc('item_comment_counts', { p_client_id: clientId, p_item_ids: rawIds })
+      : { data: [] };
+    const countsByItemId = new Map(
+      ((commentCounts ?? []) as { item_id: string; comment_count: number; new_count: number }[])
+        .map((c) => [c.item_id, c] as const),
+    );
+
     items = (rawItems ?? []).map((i) => ({
       id: i.id,
       title: i.title,
@@ -70,6 +81,8 @@ export default async function ClientHomePage({ params }: { params: Promise<{ cli
       coverSignedUrl: i.cover_photo_id
         ? (signedByPath.get(coverPathByItemId.get(i.id) ?? '') ?? null)
         : null,
+      commentCount: countsByItemId.get(i.id)?.comment_count ?? 0,
+      newCommentCount: countsByItemId.get(i.id)?.new_count ?? 0,
     }));
   }
 

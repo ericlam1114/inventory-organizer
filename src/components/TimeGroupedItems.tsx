@@ -9,6 +9,8 @@ type Item = {
   needsMetadata: boolean;
   createdAt: string;
   coverSignedUrl: string | null;
+  commentCount: number;
+  newCommentCount: number;
 };
 
 export type ItemGroup = { label: string; items: Item[] };

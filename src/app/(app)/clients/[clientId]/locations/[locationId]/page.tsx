@@ -47,7 +47,17 @@ export default async function LocationPage({
     .select('id, title, description, status, metadata, cover_photo_id, needs_metadata, created_at')
     .eq('location_id', locationId);
   if (filterNeeds) itemsQuery = itemsQuery.eq('needs_metadata', true);
-  const { data: items } = await itemsQuery.order('created_at', { ascending: false });
+  const { data: items } = await itemsQuery.order('created_at', { ascending: false }).order('id');
+
+  // Comment counts (+ unseen-by-me counts) for grid badges
+  const itemIds = (items ?? []).map((i) => i.id);
+  const { data: commentCounts } = itemIds.length > 0
+    ? await supabase.rpc('item_comment_counts', { p_client_id: clientId, p_item_ids: itemIds })
+    : { data: [] };
+  const countsByItemId = new Map(
+    ((commentCounts ?? []) as { item_id: string; comment_count: number; new_count: number }[])
+      .map((c) => [c.item_id, c] as const),
+  );
 
   // Pre-sign cover photos
   const coverIds = (items ?? []).map((i) => i.cover_photo_id).filter(Boolean) as string[];
@@ -76,6 +86,8 @@ export default async function LocationPage({
     needsMetadata: i.needs_metadata as boolean,
     createdAt: i.created_at,
     coverSignedUrl: i.cover_photo_id ? (signedByPath.get(coverPathByItemId.get(i.id) ?? '') ?? null) : null,
+    commentCount: countsByItemId.get(i.id)?.comment_count ?? 0,
+    newCommentCount: countsByItemId.get(i.id)?.new_count ?? 0,
   }));
 
   const groups = groupItemsByTime(mappedItems);

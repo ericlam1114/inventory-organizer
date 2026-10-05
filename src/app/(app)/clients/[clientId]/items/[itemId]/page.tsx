@@ -10,6 +10,8 @@ import { ItemActions } from './ItemActions';
 import { HistoryPanel } from './HistoryPanel';
 import { CommentsPanel } from './CommentsPanel';
 import { ShareCommentsPanel, type ShareThread } from './ShareCommentsPanel';
+import { ItemNavigator } from './ItemNavigator';
+import { MarkCommentsSeen } from '@/components/MarkCommentsSeen';
 
 export default async function ItemDetailPage({
   params,
@@ -34,6 +36,19 @@ export default async function ItemDetailPage({
     .is('deleted_at', null)
     .maybeSingle();
   if (!location) notFound();
+
+  // Sibling items in the same order as the location grid (newest first) for prev/next
+  const { data: siblings } = await supabase
+    .from('items')
+    .select('id')
+    .eq('location_id', item.location_id)
+    .order('created_at', { ascending: false })
+    .order('id');
+  const siblingIds = (siblings ?? []).map((s) => s.id);
+  const siblingIndex = siblingIds.indexOf(itemId);
+  const itemHref = (id: string | undefined) => (id ? `/clients/${clientId}/items/${id}` : null);
+  const prevHref = siblingIndex > 0 ? itemHref(siblingIds[siblingIndex - 1]) : null;
+  const nextHref = siblingIndex >= 0 ? itemHref(siblingIds[siblingIndex + 1]) : null;
 
   const { data: photos } = await supabase
     .from('item_photos')
@@ -166,12 +181,21 @@ export default async function ItemDetailPage({
 
   return (
     <div className="max-w-3xl mx-auto p-6 lg:p-12 space-y-8">
-      <Link
-        href={`/clients/${clientId}/locations/${item.location_id}`}
-        className="inline-flex items-center gap-1 text-ink2 hover:text-ink text-[13px]"
-      >
-        <ChevronLeft size={14} /> {location?.name ?? 'Back'}
-      </Link>
+      <MarkCommentsSeen itemId={itemId} />
+      <div className="flex items-center justify-between gap-4">
+        <Link
+          href={`/clients/${clientId}/locations/${item.location_id}`}
+          className="inline-flex items-center gap-1 text-ink2 hover:text-ink text-[13px] min-w-0"
+        >
+          <ChevronLeft size={14} className="shrink-0" /> <span className="truncate">{location?.name ?? 'Back'}</span>
+        </Link>
+        <ItemNavigator
+          prevHref={prevHref}
+          nextHref={nextHref}
+          position={siblingIndex + 1}
+          total={siblingIds.length}
+        />
+      </div>
 
       <ItemPhotos
         clientId={clientId}

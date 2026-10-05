@@ -15,6 +15,8 @@ type Item = {
   needsMetadata: boolean;
   createdAt: string;
   coverSignedUrl: string | null;
+  commentCount: number;
+  newCommentCount: number;
 };
 type Field = {
   id: string;

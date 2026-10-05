@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, MessageSquare } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
 
 type Item = {
@@ -11,6 +11,8 @@ type Item = {
   status: 'active' | 'donated' | 'archived';
   needsMetadata: boolean;
   coverSignedUrl: string | null;
+  commentCount: number;
+  newCommentCount: number;
 };
 
 export function PhotoGrid({ clientId, items }: { clientId: string; items: Item[] }) {
@@ -39,6 +41,24 @@ export function PhotoGrid({ clientId, items }: { clientId: string; items: Item[]
                   <AlertTriangle size={12} />
                 </span>
               )}
+              {item.newCommentCount > 0 ? (
+                <span
+                  className="absolute top-2 right-2 inline-flex items-center gap-1 h-6 pl-1.5 pr-2 rounded-full bg-danger text-paper text-[11px] font-semibold shadow-sm"
+                  aria-label={`${item.newCommentCount} new comment${item.newCommentCount !== 1 ? 's' : ''}`}
+                >
+                  <span className="text-[13px] leading-none">!</span>
+                  <MessageSquare size={11} />
+                  {item.newCommentCount}
+                </span>
+              ) : item.commentCount > 0 ? (
+                <span
+                  className="absolute top-2 right-2 inline-flex items-center gap-1 h-6 px-2 rounded-full bg-surface/90 text-ink text-[11px] font-medium shadow-sm"
+                  aria-label={`${item.commentCount} comment${item.commentCount !== 1 ? 's' : ''}`}
+                >
+                  <MessageSquare size={11} />
+                  {item.commentCount}
+                </span>
+              ) : null}
             </div>
             <div className="mt-2 flex items-center gap-2">
               <span className="text-[14px] font-medium truncate flex-1 group-hover:text-ink">{item.title}</span>

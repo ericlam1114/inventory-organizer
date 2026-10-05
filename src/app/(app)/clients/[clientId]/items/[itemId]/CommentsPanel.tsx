@@ -128,7 +128,7 @@ function CommentItem({
 
   if (c.deletedAt) {
     return (
-      <li className="flex gap-3">
+      <li id={`comment-${c.id}`} className="flex gap-3 scroll-mt-24">
         <div className="w-8 h-8 rounded-full bg-rule text-ink3 flex items-center justify-center text-[11px] font-medium shrink-0">·</div>
         <div className="flex-1 min-w-0">
           <p className="text-[13px] text-ink3 italic">
@@ -141,7 +141,7 @@ function CommentItem({
 
   if (editing) {
     return (
-      <li className="flex gap-3">
+      <li id={`comment-${c.id}`} className="flex gap-3 scroll-mt-24">
         <Avatar name={c.authorDisplayName} size={32} />
         <div className="flex-1 min-w-0">
           <EditForm initialBody={c.body} mentionable={mentionable} pending={pending} error={error}
@@ -152,7 +152,7 @@ function CommentItem({
   }
 
   return (
-    <li className="flex gap-3">
+    <li id={`comment-${c.id}`} className="flex gap-3 scroll-mt-24">
       <Avatar name={c.authorDisplayName} size={32} />
       <div className="flex-1 min-w-0">
         <p className="text-[13px]">

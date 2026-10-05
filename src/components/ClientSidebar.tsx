@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useParams, usePathname } from 'next/navigation';
-import { Compass, Camera, Search, Bell, Folder, Share2, Sliders } from 'lucide-react';
+import { Compass, Camera, Search, Bell, Folder, Share2, Sliders, MessageSquare } from 'lucide-react';
+import { useCommentsUnreadCount, CountBadge } from '@/components/CommentsUnreadBadge';
 
 type Location = { id: string; name: string; parent_location_id: string | null };
 
@@ -81,11 +82,13 @@ export function ClientSidebar({ clientName, locations, itemCount, needsCount }: 
   const pathname = usePathname();
   const clientId = params.clientId;
   const base = `/clients/${clientId}`;
+  const unreadComments = useCommentsUnreadCount(clientId);
 
   const tabs = [
     { href: base,                          label: 'Browse',        icon: Compass,  active: pathname === base || pathname.startsWith(`${base}/locations`) || pathname.startsWith(`${base}/items`) },
     { href: `${base}/capture`,             label: 'Capture',       icon: Camera,   active: pathname.startsWith(`${base}/capture`) },
     { href: `${base}/search`,              label: 'Search',        icon: Search,   active: pathname.startsWith(`${base}/search`) },
+    { href: `${base}/comments`,            label: 'Comments',      icon: MessageSquare, active: pathname.startsWith(`${base}/comments`), badge: unreadComments },
     { href: `${base}/shares`,              label: 'Shares',        icon: Share2,   active: pathname.startsWith(`${base}/shares`) },
     { href: `${base}/settings/fields`,     label: 'Custom fields', icon: Sliders,  active: pathname.startsWith(`${base}/settings/fields`) },
     { href: '/notifications',              label: 'Notifications', icon: Bell,     active: pathname === '/notifications' },
@@ -104,7 +107,7 @@ export function ClientSidebar({ clientName, locations, itemCount, needsCount }: 
 
         {/* Primary nav */}
         <nav className="flex flex-col gap-1 mb-4">
-          {tabs.map(({ href, label, icon: Icon, active }) => (
+          {tabs.map(({ href, label, icon: Icon, active, badge }) => (
             <Link
               key={href}
               href={href}
@@ -115,7 +118,8 @@ export function ClientSidebar({ clientName, locations, itemCount, needsCount }: 
               }`}
             >
               <Icon size={16} aria-hidden />
-              {label}
+              <span className="flex-1">{label}</span>
+              {badge ? <CountBadge count={badge} /> : null}
             </Link>
           ))}
         </nav>
