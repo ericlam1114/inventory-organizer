@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef, type ReactNode } from 'react';
 import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -11,13 +11,17 @@ export function PhotoLightbox({
   index,
   onClose,
   onNav,
+  actions,
 }: {
   photos: LightboxPhoto[];
   index: number;
   onClose: () => void;
   onNav: (i: number) => void;
+  /** Optional controls rendered under the photo (e.g. make cover / delete) */
+  actions?: ReactNode;
 }) {
   const photo = photos[index];
+  const touchStartX = useRef<number | null>(null);
   const hasPrev = index > 0;
   const hasNext = index < photos.length - 1;
 
@@ -40,6 +44,15 @@ export function PhotoLightbox({
     <div
       className="fixed inset-0 z-[200] flex items-center justify-center bg-ink/90 backdrop-blur"
       onClick={onClose}
+      onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+      onTouchEnd={(e) => {
+        // Horizontal swipe navigates on touch devices
+        if (touchStartX.current === null) return;
+        const dx = e.changedTouches[0].clientX - touchStartX.current;
+        touchStartX.current = null;
+        if (dx > 50) goPrev();
+        else if (dx < -50) goNext();
+      }}
     >
       {/* Close button */}
       <button
@@ -88,11 +101,17 @@ export function PhotoLightbox({
         </button>
       )}
 
-      {/* Counter */}
-      {photos.length > 1 && (
-        <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-paper text-[13px]">
-          {index + 1} / {photos.length}
-        </p>
+      {/* Counter + optional actions */}
+      {(photos.length > 1 || actions) && (
+        <div
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {actions}
+          {photos.length > 1 && (
+            <p className="text-paper text-[13px]">{index + 1} / {photos.length}</p>
+          )}
+        </div>
       )}
     </div>
   );

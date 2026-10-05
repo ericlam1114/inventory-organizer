@@ -3,11 +3,13 @@ import { notFound } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { getSignedPhotoUrlsServer } from '@/lib/photos/public-url.server';
+import { isShareLive } from '@/lib/shares/scope';
 import { ItemMetadataForm } from './ItemMetadataForm';
 import { ItemPhotos } from './ItemPhotos';
 import { ItemActions } from './ItemActions';
 import { HistoryPanel } from './HistoryPanel';
 import { CommentsPanel } from './CommentsPanel';
+import { ShareCommentsPanel, type ShareThread } from './ShareCommentsPanel';
 
 export default async function ItemDetailPage({
   params,
@@ -105,6 +107,43 @@ export default async function ItemDetailPage({
     : { data: [] };
   const commentAuthorsMap = new Map((commentAuthors ?? []).map((p) => [p.id, p] as const));
 
+  // Comments from share-link recipients (RLS: only roles that manage shares see these)
+  const { data: shareComments } = await supabase
+    .from('share_comments')
+    .select('id, share_id, author_email, author_id, body, created_at')
+    .eq('item_id', itemId)
+    .is('deleted_at', null)
+    .order('created_at');
+  const threadShareIds = Array.from(new Set((shareComments ?? []).map((c) => c.share_id)));
+  const shareTeamIds = Array.from(new Set((shareComments ?? []).map((c) => c.author_id).filter(Boolean) as string[]));
+  const [{ data: threadShares }, { data: threadRecipients }, { data: shareTeamProfiles }] = await Promise.all([
+    threadShareIds.length > 0
+      ? supabase.from('shares').select('id, expires_at, revoked_at').in('id', threadShareIds)
+      : Promise.resolve({ data: [] as Array<{ id: string; expires_at: string; revoked_at: string | null }> }),
+    threadShareIds.length > 0
+      ? supabase.from('share_recipients').select('share_id, email').in('share_id', threadShareIds)
+      : Promise.resolve({ data: [] as Array<{ share_id: string; email: string }> }),
+    shareTeamIds.length > 0
+      ? supabase.from('profiles').select('id, display_name').in('id', shareTeamIds)
+      : Promise.resolve({ data: [] as Array<{ id: string; display_name: string }> }),
+  ]);
+  const shareTeamNameById = new Map((shareTeamProfiles ?? []).map((p) => [p.id, p.display_name] as const));
+  const shareThreads: ShareThread[] = threadShareIds.map((shareId) => {
+    const s = (threadShares ?? []).find((x) => x.id === shareId);
+    return {
+      shareId,
+      recipients: (threadRecipients ?? []).filter((r) => r.share_id === shareId).map((r) => r.email),
+      live: !!s && isShareLive(s),
+      comments: (shareComments ?? []).filter((c) => c.share_id === shareId).map((c) => ({
+        id: c.id,
+        authorLabel: c.author_id ? (shareTeamNameById.get(c.author_id) ?? 'Team') : (c.author_email ?? 'Guest'),
+        isTeam: !!c.author_id,
+        body: c.body,
+        createdAt: c.created_at,
+      })),
+    };
+  });
+
   // Mention-eligible users: everyone with access to this client
   const [{ data: orgUsersRoles }, { data: clientUsersRoles }] = await Promise.all([
     supabase.from('org_roles').select('user_id, role'),
@@ -190,6 +229,8 @@ export default async function ItemDetailPage({
         }))}
         mentionable={mentionable}
       />
+
+      <ShareCommentsPanel itemId={itemId} threads={shareThreads} />
 
       <HistoryPanel
         entries={(history ?? []).map((h) => ({

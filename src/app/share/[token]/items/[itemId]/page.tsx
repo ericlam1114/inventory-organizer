@@ -1,13 +1,15 @@
 import { notFound, redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { verifySession } from '@/lib/shares/cookie';
+import { getShareByToken, isItemInShare, isShareLive } from '@/lib/shares/scope';
 import { Brand } from '@/components/Brand';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ShareViewerBanner } from '../../ShareViewerBanner';
+import { SharePhotos } from './SharePhotos';
+import { ShareComments } from './ShareComments';
 
 export default async function ShareItemPage({
   params,
@@ -21,15 +23,11 @@ export default async function ShareItemPage({
 
   const admin = createAdminClient();
 
-  // Verify share is still valid + item is in subtree
-  const { data: share } = await admin
-    .from('shares')
-    .select('id, client_id, root_location_id, expires_at, revoked_at, note, created_by')
-    .eq('token', token)
-    .maybeSingle();
-  if (!share || share.revoked_at || new Date(share.expires_at).getTime() < Date.now()) {
-    redirect(`/share/${token}`);
-  }
+  // Verify share is still valid + item is in scope
+  // (security: prevents URL-guessing items from other locations or clients)
+  const share = await getShareByToken(admin, token);
+  if (!share || !isShareLive(share)) redirect(`/share/${token}`);
+  if (!(await isItemInShare(admin, share, itemId))) notFound();
 
   const { data: item } = await admin
     .from('items')
@@ -38,27 +36,7 @@ export default async function ShareItemPage({
     .maybeSingle();
   if (!item) notFound();
 
-  // Verify item is in the share's subtree (security: prevents URL-guessing items from other locations)
-  const { data: allLocs } = await admin
-    .from('locations')
-    .select('id, parent_location_id')
-    .eq('client_id', share.client_id)
-    .is('deleted_at', null);
-  const activeLocationIds = new Set((allLocs ?? []).map((location) => location.id));
-  if (!activeLocationIds.has(share.root_location_id) || !activeLocationIds.has(item.location_id)) notFound();
-  const inSubtree = (locId: string): boolean => {
-    let cur: string | null = locId;
-    while (cur) {
-      if (cur === share.root_location_id) return true;
-      const parent =
-        (allLocs ?? []).find((l) => l.id === cur)?.parent_location_id ?? null;
-      cur = parent;
-    }
-    return false;
-  };
-  if (!inSubtree(item.location_id)) notFound();
-
-  const [{ data: photos }, { data: fields }, { data: sender }] = await Promise.all([
+  const [{ data: photos }, { data: fields }, { data: sender }, { data: comments }] = await Promise.all([
     admin
       .from('item_photos')
       .select('id, storage_path')
@@ -74,7 +52,21 @@ export default async function ShareItemPage({
       .select('display_name')
       .eq('id', share.created_by)
       .maybeSingle(),
+    // Only this share's thread — recipients of other shares never see it
+    admin
+      .from('share_comments')
+      .select('id, author_email, author_id, body, created_at')
+      .eq('share_id', share.id)
+      .eq('item_id', itemId)
+      .is('deleted_at', null)
+      .order('created_at'),
   ]);
+
+  const teamIds = Array.from(new Set((comments ?? []).map((c) => c.author_id).filter(Boolean) as string[]));
+  const { data: teamProfiles } = teamIds.length > 0
+    ? await admin.from('profiles').select('id, display_name').in('id', teamIds)
+    : { data: [] };
+  const teamNameById = new Map((teamProfiles ?? []).map((p) => [p.id, p.display_name] as const));
 
   const paths = (photos ?? []).map((p) => p.storage_path);
   const { data: signedRows } =
@@ -86,7 +78,8 @@ export default async function ShareItemPage({
     if (r.signedUrl && r.path) signed.set(r.path, r.signedUrl);
   }
   const cover = (photos ?? []).find((p) => p.id === item.cover_photo_id) ?? photos?.[0];
-  const others = (photos ?? []).filter((p) => p.id !== cover?.id);
+  const ordered = cover ? [cover, ...(photos ?? []).filter((p) => p.id !== cover.id)] : [];
+  const senderName = sender?.display_name ?? 'Janelle Lam';
 
   return (
     <main className="min-h-screen bg-paper flex flex-col">
@@ -94,7 +87,7 @@ export default async function ShareItemPage({
         <Brand variant="light" size={28} />
       </header>
       <ShareViewerBanner
-        senderName={sender?.display_name ?? 'Janelle Lam'}
+        senderName={senderName}
         expiresAt={share.expires_at}
         note={share.note}
       />
@@ -106,32 +99,10 @@ export default async function ShareItemPage({
           <ChevronLeft size={14} /> Back
         </Link>
 
-        {cover && (
-          <div className="relative w-full aspect-square bg-paper">
-            <Image
-              src={signed.get(cover.storage_path) ?? ''}
-              alt={item.title}
-              fill
-              className="object-contain"
-              sizes="(max-width: 768px) 100vw, 720px"
-            />
-          </div>
-        )}
-        {others.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto">
-            {others.map((p) => (
-              <div key={p.id} className="relative shrink-0 w-20 h-20">
-                <Image
-                  src={signed.get(p.storage_path) ?? ''}
-                  alt={`${item.title} (additional photo)`}
-                  fill
-                  className="object-cover"
-                  sizes="80px"
-                />
-              </div>
-            ))}
-          </div>
-        )}
+        <SharePhotos
+          itemTitle={item.title}
+          photos={ordered.map((p) => ({ id: p.id, signedUrl: signed.get(p.storage_path) ?? null }))}
+        />
 
         <div className="flex items-start justify-between gap-4">
           <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em] flex-1">{item.title}</h1>
@@ -157,6 +128,23 @@ export default async function ShareItemPage({
             })}
           </div>
         )}
+
+        <ShareComments
+          token={token}
+          itemId={itemId}
+          viewerEmail={session.email}
+          senderName={senderName}
+          comments={(comments ?? []).map((c) => ({
+            id: c.id,
+            authorLabel: c.author_id
+              ? (teamNameById.get(c.author_id) ?? 'Team')
+              : (c.author_email ?? 'Guest'),
+            isTeam: !!c.author_id,
+            isMine: c.author_email === session.email,
+            body: c.body,
+            createdAt: c.created_at,
+          }))}
+        />
       </div>
     </main>
   );

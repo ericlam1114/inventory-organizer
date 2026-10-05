@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Camera, Plus, Star } from 'lucide-react';
+import { Camera, Plus, Star, Trash2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { processPhoto } from '@/lib/photos/process';
 import { uploadItemPhoto } from '@/lib/photos/upload';
@@ -26,6 +26,7 @@ export function ItemPhotos({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const cover = photos.find((p) => p.id === coverPhotoId) ?? photos[0];
   const others = photos.filter((p) => p.id !== cover?.id);
@@ -62,10 +63,75 @@ export function ItemPhotos({
       toast.error(reportError(error));
     } else {
       toast.success('Cover updated');
+      // The new cover moves to the front, so keep the lightbox on it
+      setLightboxIndex((i) => (i === null ? null : 0));
       router.refresh();
     }
     setBusy(false);
   }
+
+  async function deletePhoto(photo: PhotoInput) {
+    setBusy(true);
+    const supabase = createClient();
+    const remaining = orderedPhotos.filter((p) => p.id !== photo.id);
+    try {
+      // Hand the cover to the next photo first so grid tiles don't go blank
+      if (photo.id === cover?.id) {
+        const { error } = await supabase.from('items')
+          .update({ cover_photo_id: remaining[0]?.id ?? null })
+          .eq('id', itemId);
+        if (error) throw error;
+      }
+      const { error } = await supabase.from('item_photos').delete().eq('id', photo.id);
+      if (error) throw error;
+      // Storage cleanup is best-effort; the row is already gone
+      await supabase.storage.from('inventory-photos').remove([photo.storagePath]);
+
+      setConfirmDeleteId(null);
+      setLightboxIndex(remaining.length === 0 ? null : Math.min(lightboxIndex ?? 0, remaining.length - 1));
+      toast.success('Photo deleted');
+      router.refresh();
+    } catch (e) {
+      toast.error(reportError(e as { message?: string }));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const lightboxPhoto = lightboxIndex !== null ? orderedPhotos[lightboxIndex] : null;
+  const lightboxActions = lightboxPhoto && (
+    <div className="flex gap-2">
+      {lightboxPhoto.id !== cover?.id && (
+        <button
+          type="button"
+          onClick={() => promoteToCover(lightboxPhoto.id)}
+          disabled={busy}
+          className="inline-flex items-center gap-1.5 bg-paper text-ink px-3 py-2 rounded-[2px] text-[13px] font-medium disabled:opacity-60"
+        >
+          <Star size={14} /> Make cover
+        </button>
+      )}
+      {confirmDeleteId === lightboxPhoto.id ? (
+        <button
+          type="button"
+          onClick={() => deletePhoto(lightboxPhoto)}
+          disabled={busy}
+          className="inline-flex items-center gap-1.5 bg-danger text-paper px-3 py-2 rounded-[2px] text-[13px] font-medium disabled:opacity-60"
+        >
+          <Trash2 size={14} /> {busy ? 'Deleting…' : 'Tap again to delete'}
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setConfirmDeleteId(lightboxPhoto.id)}
+          disabled={busy}
+          className="inline-flex items-center gap-1.5 bg-paper text-danger px-3 py-2 rounded-[2px] text-[13px] font-medium disabled:opacity-60"
+        >
+          <Trash2 size={14} /> Delete
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-4">
@@ -86,26 +152,16 @@ export function ItemPhotos({
       {others.length > 0 && (
         <div className="flex gap-2 overflow-x-auto">
           {others.map((p, idx) => (
-            <div key={p.id} className="relative shrink-0 w-20 h-20 group">
-              {/* Click to open lightbox at this photo (idx+1 because cover is 0) */}
-              <button
-                type="button"
-                onClick={() => setLightboxIndex(idx + 1)}
-                className="absolute inset-0 cursor-zoom-in"
-                aria-label="View photo"
-              />
-              {p.signedUrl && <Image src={p.signedUrl} alt={`${itemTitle} (additional photo)`} fill className="object-cover pointer-events-none" sizes="80px" />}
-              {/* Star button for promote-to-cover */}
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); promoteToCover(p.id); }}
-                disabled={busy}
-                title="Promote to cover"
-                className="absolute inset-0 flex items-center justify-center bg-ink/0 group-hover:bg-ink/40 transition-colors disabled:opacity-50"
-              >
-                <Star size={16} className="text-paper opacity-0 group-hover:opacity-100" />
-              </button>
-            </div>
+            // Tap opens the lightbox (idx+1 because cover is 0); cover/delete live there
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setLightboxIndex(idx + 1)}
+              className="relative shrink-0 w-20 h-20 cursor-zoom-in"
+              aria-label="View photo"
+            >
+              {p.signedUrl && <Image src={p.signedUrl} alt={`${itemTitle} (additional photo)`} fill className="object-cover" sizes="80px" />}
+            </button>
           ))}
         </div>
       )}
@@ -143,8 +199,9 @@ export function ItemPhotos({
         <PhotoLightbox
           photos={orderedPhotos}
           index={lightboxIndex}
-          onClose={() => setLightboxIndex(null)}
-          onNav={setLightboxIndex}
+          onClose={() => { setLightboxIndex(null); setConfirmDeleteId(null); }}
+          onNav={(i) => { setLightboxIndex(i); setConfirmDeleteId(null); }}
+          actions={lightboxActions}
         />
       )}
     </div>

@@ -11,12 +11,14 @@ export async function createShare(
   _prev: { error?: string },
   formData: FormData,
 ) {
-  const rootLocationId = String(formData.get('rootLocationId') ?? '').trim();
+  const rootRaw = String(formData.get('rootLocationId') ?? '').trim();
+  // 'all' = whole-client share, stored as a null root
+  const rootLocationId = rootRaw === 'all' ? null : rootRaw;
   const recipientsRaw = String(formData.get('recipients') ?? '');
   const expiresInDays = parseInt(String(formData.get('expiresInDays') ?? '30'), 10);
   const note = String(formData.get('note') ?? '').trim() || null;
 
-  if (!rootLocationId) return { error: 'Pick a subtree root' };
+  if (!rootRaw) return { error: 'Pick what to share' };
   const recipients = recipientsRaw
     .split(/[,\n\s]+/)
     .map((e) => e.trim().toLowerCase())
@@ -28,13 +30,15 @@ export async function createShare(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Not signed in' };
 
-  const { data: location } = await supabase.from('locations')
-    .select('id')
-    .eq('id', rootLocationId)
-    .eq('client_id', clientId)
-    .is('deleted_at', null)
-    .maybeSingle();
-  if (!location) return { error: 'Choose an active location.' };
+  if (rootLocationId) {
+    const { data: location } = await supabase.from('locations')
+      .select('id')
+      .eq('id', rootLocationId)
+      .eq('client_id', clientId)
+      .is('deleted_at', null)
+      .maybeSingle();
+    if (!location) return { error: 'Choose an active location.' };
+  }
 
   const token = randomBytes(32).toString('base64url');
   const expiresAt = new Date(Date.now() + expiresInDays * 86400 * 1000).toISOString();
@@ -80,7 +84,7 @@ async function sendShareInvites(
   token: string,
   recipients: string[],
   clientId: string,
-  rootLocationId: string,
+  rootLocationId: string | null,
   note: string | null,
   createdBy: string,
 ) {
@@ -91,9 +95,11 @@ async function sendShareInvites(
 
   const admin = createAdminClient();
   const { data: profile } = await admin.from('profiles').select('display_name').eq('id', createdBy).maybeSingle();
-  const { data: location } = await admin.from('locations').select('name').eq('id', rootLocationId).maybeSingle();
+  const { data: scope } = rootLocationId
+    ? await admin.from('locations').select('name').eq('id', rootLocationId).maybeSingle()
+    : await admin.from('clients').select('name').eq('id', clientId).maybeSingle();
   const senderName = profile?.display_name ?? 'Straighten Up Home';
-  const subtreeName = location?.name ?? 'Inventory';
+  const subtreeName = scope?.name ?? 'Inventory';
   const shareUrl = `${appUrl}/share/${token}`;
 
   const { Resend } = await import('resend');

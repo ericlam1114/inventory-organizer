@@ -29,11 +29,15 @@ export default async function SharesPage({ params }: { params: Promise<{ clientI
   }
 
   // Location names for root_location_id
-  const locIds = Array.from(new Set((shares ?? []).map((s) => s.root_location_id)));
+  const locIds = Array.from(new Set(
+    (shares ?? []).map((s) => s.root_location_id).filter((id): id is string => id !== null),
+  ));
   const { data: locs } = locIds.length > 0
     ? await supabase.from('locations').select('id, name').in('id', locIds)
     : { data: [] };
   const locNameById = new Map((locs ?? []).map((l) => [l.id, l.name] as const));
+  const scopeName = (rootId: string | null) =>
+    rootId === null ? `Entire client · ${client.name}` : (locNameById.get(rootId) ?? '(unknown)');
 
   // For the create form: full location list
   const { data: allLocations } = await supabase
@@ -58,7 +62,7 @@ export default async function SharesPage({ params }: { params: Promise<{ clientI
         active={active.map((s) => ({
           id: s.id,
           token: s.token,
-          locationName: locNameById.get(s.root_location_id) ?? '(unknown)',
+          locationName: scopeName(s.root_location_id),
           recipients: recipientsByShare.get(s.id) ?? [],
           expiresAt: s.expires_at,
           createdAt: s.created_at,
@@ -66,7 +70,7 @@ export default async function SharesPage({ params }: { params: Promise<{ clientI
         inactive={inactive.map((s) => ({
           id: s.id,
           token: s.token,
-          locationName: locNameById.get(s.root_location_id) ?? '(unknown)',
+          locationName: scopeName(s.root_location_id),
           recipients: recipientsByShare.get(s.id) ?? [],
           expiresAt: s.expires_at,
           revokedAt: s.revoked_at,

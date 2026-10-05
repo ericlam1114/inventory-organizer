@@ -5,41 +5,12 @@ import { verifySession } from '@/lib/shares/cookie';
 import { Brand } from '@/components/Brand';
 import { ShareViewerBanner } from './ShareViewerBanner';
 import { ShareItemsGrid } from './ShareItemsGrid';
+import { getShareByToken, getShareLocationIds } from '@/lib/shares/scope';
 
 async function checkAccess(token: string) {
   const cookieStore = await cookies();
   const cookie = cookieStore.get('share-session')?.value;
   return verifySession(cookie, token);
-}
-
-async function collectSubtreeIds(
-  admin: ReturnType<typeof createAdminClient>,
-  clientId: string,
-  rootId: string,
-): Promise<string[]> {
-  const { data: all } = await admin
-    .from('locations')
-    .select('id, parent_location_id')
-    .eq('client_id', clientId)
-    .is('deleted_at', null);
-  if (!all) return [rootId];
-
-  const childrenByParent = new Map<string, string[]>();
-  for (const l of all) {
-    const p = l.parent_location_id ?? '__root__';
-    if (!childrenByParent.has(p)) childrenByParent.set(p, []);
-    childrenByParent.get(p)!.push(l.id);
-  }
-
-  const result: string[] = [];
-  const queue: string[] = [rootId];
-  while (queue.length > 0) {
-    const id = queue.shift()!;
-    result.push(id);
-    const children = childrenByParent.get(id) ?? [];
-    for (const c of children) queue.push(c);
-  }
-  return result;
 }
 
 export default async function SharePage({ params }: { params: Promise<{ token: string }> }) {
@@ -50,11 +21,7 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
   const admin = createAdminClient();
 
   // Re-validate share state
-  const { data: share } = await admin
-    .from('shares')
-    .select('id, client_id, root_location_id, expires_at, revoked_at, note, created_by')
-    .eq('token', token)
-    .maybeSingle();
+  const share = await getShareByToken(admin, token);
   if (!share) notFound();
   if (share.revoked_at) {
     return <SharePagePlaceholder title="This share was revoked by the sender." />;
@@ -67,12 +34,9 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
     );
   }
 
-  const { data: activeRoot } = await admin.from('locations')
-    .select('id')
-    .eq('id', share.root_location_id)
-    .is('deleted_at', null)
-    .maybeSingle();
-  if (!activeRoot) {
+  // Visible locations: the subtree, or every active location for whole-client shares
+  const locIds = await getShareLocationIds(admin, share);
+  if (!locIds) {
     return <SharePagePlaceholder title="This shared location is in Trash." />;
   }
 
@@ -99,14 +63,17 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
       .eq('email', session.email);
   }
 
-  // Sender + root location name
-  const [{ data: sender }, { data: root }] = await Promise.all([
+  // Sender + heading (root location name, or client name for whole-client shares)
+  const [{ data: sender }, { data: root }, { data: client }, { data: locations }] = await Promise.all([
     admin.from('profiles').select('display_name').eq('id', share.created_by).maybeSingle(),
-    admin.from('locations').select('name').eq('id', share.root_location_id).maybeSingle(),
+    share.root_location_id
+      ? admin.from('locations').select('name').eq('id', share.root_location_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    admin.from('clients').select('name').eq('id', share.client_id).maybeSingle(),
+    admin.from('locations').select('id, name').in('id', locIds).order('name'),
   ]);
-
-  // Subtree: all descendant location ids
-  const locIds = await collectSubtreeIds(admin, share.client_id, share.root_location_id);
+  const heading = share.root_location_id ? (root?.name ?? 'Inventory') : (client?.name ?? 'Inventory');
+  const locationNameById = new Map((locations ?? []).map((l) => [l.id, l.name] as const));
 
   const { data: items } = await admin
     .from('items')
@@ -148,13 +115,14 @@ export default async function SharePage({ params }: { params: Promise<{ token: s
         note={share.note}
       />
       <div className="flex-1 p-6 lg:p-12 max-w-5xl mx-auto w-full space-y-6">
-        <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em]">{root?.name ?? 'Inventory'}</h1>
+        <h1 className="font-display text-[36px] sm:text-[42px] lg:text-[52px] font-medium leading-[1.05] tracking-[-0.01em]">{heading}</h1>
         <ShareItemsGrid
           token={token}
           items={(items ?? []).map((i) => ({
             id: i.id,
             title: i.title,
             status: i.status as 'active' | 'donated' | 'archived',
+            locationName: locationNameById.get(i.location_id) ?? '',
             coverSignedUrl: i.cover_photo_id
               ? (signed.get(pathByItem.get(i.id) ?? '') ?? null)
               : null,
